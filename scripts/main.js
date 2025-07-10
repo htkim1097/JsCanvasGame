@@ -1,4 +1,4 @@
-import enemy from 'enemy.js';
+import * as enemy from './enemy.js';
 
 // 캔버스 객체 생성
 let canvas = document.getElementById("myCanvas");
@@ -27,10 +27,13 @@ document.addEventListener("keyup", (e) => {
 
 function update() {
     
+    enemy.updateEnemies(canvas);  // 적 이동
 }
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    enemy.drawEnemies(ctx);  // 적 그리기
 }
 
 function gameloop() {
@@ -38,4 +41,6 @@ function gameloop() {
     draw();
     requestAnimationFrame(gameloop);
 }
+
+enemy.createEnemy();
 gameloop();
