@@ -1,3 +1,5 @@
+import enemy from 'enemy.js';
+
 // 캔버스 객체 생성
 let canvas = document.getElementById("myCanvas");
 // 캔버스 그리기 도구 불러오기
@@ -24,36 +26,11 @@ document.addEventListener("keyup", (e) => {
 });
 
 function update() {
-    // Space
-    if (keys[32] && !player.isJumping) {
-        player.velocityY = jumpPower;
-        player.isJumping = true;
-    }
-    // 오른쪽
-    if (keys[39]) {
-        player.x += 10;
-    }
-    // 왼쪽
-    if (keys[37]) {
-        player.x -= 10;
-    }
-
-    player.velocityY += gravity;
-    player.y += player.velocityY;
-
-    if (player.y >= groundY) {
-        player.y = groundY;
-        player.velocityY = 0;
-        player.isJumping = false;
-    }
+    
 }
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "black";
-    ctx.fillRect(0, groundY + player.height, canvas.width, 10);
-    ctx.fillStyle = "blue";
-    ctx.fillRect(player.x, player.y, player.width, player.height);
 }
 
 function gameloop() {
