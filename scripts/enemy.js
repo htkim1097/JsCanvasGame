@@ -1,7 +1,7 @@
 // k250710 모듈 생성
 
 // 이동 패턴
-const MovePattern = {
+export const MovePattern = {
     FORWARD: 0,
     LEFT: 1,
     RIGHT: 2
@@ -33,13 +33,14 @@ function EnemySmall(movePattern) {
             this.x = rangeRandom(canvasWidth / 2, canvasWidth - this.width);
             break;
         case MovePattern.RIGHT:
+            this.x = rangeRandom(this.width, canvasWidth / 2);
             break;
     }
 }
 
 // 적 항공기 생성(테스트용)
-export function createEnemy() {
-    enemies.push(new EnemySmall(MovePattern.LEFT));
+export function createEnemy(movePattern) {
+    enemies.push(new EnemySmall(movePattern));
 }
 
 export function drawEnemies(ctx) {
@@ -63,8 +64,6 @@ export function updateEnemies(canvas) {
         if (enemy.y > canvas.height) {
             enemies.splice(i, 1);   // 적 삭제; i번째 아이템부터 1개 삭제한다는 의미
         }
-
-
     }
 }
 
@@ -77,7 +76,7 @@ function moveEnemy(enemy) {
             enemy.y += enemy.speed;
             break;
         case MovePattern.LEFT:
-            if (enemy.updateCnt < rangeRandom(40, 70)){
+            if (enemy.updateCnt < rangeRandom(40, 70)) {
                 enemy.y += enemy.speed;
             }
             else {
@@ -86,8 +85,19 @@ function moveEnemy(enemy) {
             }
             break;
         case MovePattern.RIGHT:
+            if (enemy.updateCnt < rangeRandom(40, 70)) {
+                enemy.y += enemy.speed;
+            }
+            else {
+                enemy.y += enemy.speed;
+                enemy.x += 1;
+            }
             break;
     }
+}
+
+function moveToXY(x, y) {
+
 }
 
 // 최소, 최대 값 사이의 정수를 랜덤 반환한다

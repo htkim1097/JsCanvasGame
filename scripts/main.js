@@ -8,18 +8,18 @@ let ctx = canvas.getContext("2d");
 let img = new Image();
 img.src = "../images/png/Image45.png";
 
- // 플레이어
- let player = {
-     x: 100,
-     y: 100,
-     width: 5,
-     height: 5,
-     life: 3,
-     bomb: 2,
-     attack: 1,
-     speed: 2
- };
- //450 x 600
+// 플레이어
+let player = {
+    x: 100,
+    y: 100,
+    width: 25,
+    height: 25,
+    life: 3,
+    bomb: 2,
+    attack: 1,
+    speed: 3
+};
+//450 x 600
 
 var keys = [];
 
@@ -69,8 +69,10 @@ function update() {
     //     player.velocityY = 0;
     //     player.isJumping = false;
     // }
-}
 
+    // 적 위치 값 업데이트
+    enemy.updateEnemies(canvas);
+}
 
 function draw() {
     // ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -80,9 +82,11 @@ function draw() {
     // ctx.fillRect(player.x, player.y, player.width, player.height);
 
     ctx.clearRect(0, 0, 450, 600);
-    
+
     ctx.drawImage(img, player.x - player.width / 2, player.y - player.height / 2, player.width * 2, player.height * 2);
-    
+
+    // 적 그리기
+    enemy.drawEnemies(ctx);
 }
 
 function gameloop() {
@@ -90,4 +94,10 @@ function gameloop() {
     draw();
     requestAnimationFrame(gameloop);
 }
+
+// 적 생성 테스트
+enemy.createEnemy(enemy.MovePattern.LEFT);
+enemy.createEnemy(enemy.MovePattern.RIGHT);
+enemy.createEnemy(enemy.MovePattern.FORWARD);
+
 gameloop();
