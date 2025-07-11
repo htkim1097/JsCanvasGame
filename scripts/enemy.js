@@ -161,7 +161,7 @@ export function draw(ctx) {
         let bullet = bullets[i];
 
         if (bullet.img.src != undefined) {
-            ctx.drawImage(bullet.img, bullet.x, bullet, y);
+            ctx.drawImage(bullet.img, bullet.x, bullet.y);
         }
     }
 

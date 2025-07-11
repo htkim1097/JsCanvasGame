@@ -43,7 +43,9 @@ let bulletTime = 0;
 let bombTime = 0;
 let lives = 3;
 
-let keys = [];
+var keys = [];
+// map 설정
+map.setMap(1);
 
 document.addEventListener("keydown", (e) => {
     keys[e.keyCode] = true;
@@ -103,8 +105,8 @@ function update() {
             }   
     }
 
-    poweritem.update(canvas);
-    bombitem.update(canvas);
+    item.update(canvas);
+    item.update(canvas);
     
     // 적 위치 값 업데이트
     enemy.update(canvas);
@@ -241,18 +243,16 @@ function gameOver(){
     ctx.drawImage(img_gameover, 0, 0, canvas.width, canvas.height);
 }
 
-
-
-
-
-
-
-
 // ####### 그리기 ##########
 function drawPlayer() {
+    // 캔버스 초기화
     ctx.clearRect(0, 0, 450, 600);
     
     item.draw(ctx);
+    
+    // 맵 그리기
+    map.draw(ctx);
+
     // 플레이어 그리기
     ctx.drawImage(img_player, player.x - player.width / 2, player.y - player.height / 2, player.width, player.height);
 
@@ -295,8 +295,8 @@ function gameloop() {
 }
 
 // 적 생성 테스트
-enemy.createEnemy(enemy.MovePattern.LEFT, "../images/PNG/Image79.png");
-enemy.createEnemy(enemy.MovePattern.RIGHT, "../images/PNG/Image79.png");
-enemy.createEnemy(enemy.MovePattern.FORWARD, "../images/PNG/Image79.png");
+enemy.createEnemy(100, enemy.MovePattern.LEFT);
+enemy.createEnemy(200, enemy.MovePattern.RIGHT);
+enemy.createEnemy(10, enemy.MovePattern.FORWARD);
 
 gameloop();

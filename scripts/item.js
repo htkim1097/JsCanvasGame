@@ -61,7 +61,13 @@ export function update(canvas) {
 export function draw(ctx) {
     for (let i = 0; i < items.length; i++) {
         let item = items[i];
-        ctx.drawImage(img_item, item.x, item.y, 50, 50);
+
+        if (item.type == itemType.power){
+            ctx.drawImage(img_poweritem, item.x, item.y, 50, 50);
+        }
+        else {
+            ctx.drawImage(img_bombitem, item.x, item.y, 50, 50);
+        }
         
     }
 }

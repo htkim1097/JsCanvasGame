@@ -1,12 +1,29 @@
-let map1 = new Image();
-map1.src = "../images/PNG/Image44.png";
+// 캔버스 크기. 임시로 하드코딩 함.
+const canvasWidth = 450;
+const canvasHeight = 600;
 
-let maps = new Array(map1);
+let mapSrcArr = new Array("../images/PNG/Image44.png");
+let mapScroll = 0;
+let nowMap;
 
-export function draw(ctx){
-    ctx.drawImage(map1, 0, -map1.height - 1220, 450, 3652);
+function Map(src, hOffset){
+    this.img = new Image();
+    this.img.src = src;
+    this.x = 0;
+    this.y = hOffset;
 }
 
-export function update(canvas){
+export function setMap(stageNum) {
+    nowMap = new Map(mapSrcArr[stageNum - 1], -3650);
+}
 
+export function draw(ctx) {
+    ctx.drawImage(nowMap.img, nowMap.x, nowMap.y + mapScroll);
+}
+
+export function update(canvas) {
+    mapScroll += 1;
+    if (mapScroll >= nowMap.img.height - canvasHeight){
+        mapScroll = 0;
+    }
 }
