@@ -13,18 +13,22 @@ const canvasHeight = 600;
 
 // 적 객체 배열
 const enemies = new Array();
+const effects = new Array();
 
-// 작은 적 항공기 사용자 객체
-function EnemySmall(movePattern) {
+// 소형 적 객체
+function SmallEnemy(movePattern, imageSrc) {
     this.x;
     this.y = -100;
-    this.width = 20,    // hit box 너비
-        this.height = 20,   // hit box 높이
-        this.life = 1;      // 작은 적은 한 방에 죽도록 체력을 1로 맞춤
+    this.width = 40;    // hit box 너비
+    this.height = 40;   // hit box 높이
+    this.life = 1;      // 작은 적은 한 방에 죽도록 체력을 1로 맞춤
     this.speed = 3;    // 이동 속도
     this.updateCnt = 0;
     this.movePattern = movePattern;
+    this.img = new Image();
+    this.img.src = imageSrc;
 
+    // 이동 패턴에 따라 초기 위치값 설정
     switch (movePattern) {
         case MovePattern.FORWARD:
             this.x = rangeRandom(this.width, canvasWidth - this.width);
@@ -38,22 +42,63 @@ function EnemySmall(movePattern) {
     }
 }
 
-// 적 항공기 생성(테스트용)
-export function createEnemy(movePattern) {
-    enemies.push(new EnemySmall(movePattern));
-}
+// 폭발 이펙트 객체
+function explosionAnim(x, y, w) {
+    this.x = x;
+    this.y = y;
+    this.w = w;
+    this.interval = 2;
+    this.updateCnt = 0;
+    this.imgArr = new Array();
 
-export function drawEnemies(ctx) {
-    for (let i = 0; i < enemies.length; i++) {
-        ctx.fillStyle = 'red';
-
-        let enemy = enemies[i];
-        // 임시로 적을 박스로 그리기
-        ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+    for (let i = 0; i < 10; i++){
+        let img = new Image();
+        //img.src = this.imgPaths[i];
+        img.src = `../images/PNG/Image${81 + i}.png`;
+        this.imgArr.push(img);
     }
 }
 
-export function updateEnemies(canvas) {
+effects.push(new explosionAnim(150, 150, 140, 140));
+
+// 적 항공기 생성(테스트용)
+export function createEnemy(movePattern, img) {
+    enemies.push(new SmallEnemy(movePattern, img));
+}
+
+export function draw(ctx) {
+    // 적 그리기
+    for (let i = 0; i < enemies.length; i++) {
+        let enemy = enemies[i];
+
+        if (enemy.img.src != undefined) {
+            ctx.drawImage(enemy.img, enemy.x, enemy.y, enemy.width, enemy.height);
+        }
+        // 이미지 파일이 없으면 적을 박스로 그리기
+        else {
+            ctx.fillStyle = 'red';
+            ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+        }
+    }
+
+    // 이펙트 그리기
+    for (let i = 0; i < effects.length; i++){
+        let eff = effects[i];
+        eff.updateCnt++;
+        let n = Math.floor(eff.updateCnt / eff.interval) - 1;
+
+        if (eff.imgArr.length <= n){
+            effects.splice(i);
+            continue;
+        }
+
+        if (eff.updateCnt % eff.interval == 0) {
+            ctx.drawImage(eff.imgArr[n], eff.x, eff.y, eff.w, eff.w);
+        }
+    }
+}
+
+export function update(canvas) {
     for (let i = 0; i < enemies.length; i++) {
         let enemy = enemies[i];
 
@@ -96,8 +141,17 @@ function moveEnemy(enemy) {
     }
 }
 
-function moveToXY(x, y) {
+// 적 파괴
+function destroy(idx) {
+    // 체력이 0 이하일 때만 폭발 이펙트
+    if (enemies[idx].life <= 0) {
+        let enemy = enemies[0];
 
+        // 현재 위치에 폭발 이펙트 생성
+        effects.push(new explosionAnim(enemy.x, enemy.y, enemy.width - 3));
+    }
+
+    enemies.splice(idx, 1);
 }
 
 // 최소, 최대 값 사이의 정수를 랜덤 반환한다

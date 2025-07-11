@@ -1,6 +1,8 @@
 import * as enemy from './enemy.js';
+import * as map from './map.js';
 
 // 캔버스 객체 생성
+//450 x 600
 let canvas = document.getElementById("myCanvas");
 // 캔버스 그리기 도구 불러오기
 let ctx = canvas.getContext("2d");
@@ -49,6 +51,8 @@ document.addEventListener("keyup", (e) => {
 });
 
 function update() {
+    map.update(canvas);
+
     // 오른쪽
     if (keys[39]) {
         player.x += player.speed;
@@ -96,7 +100,7 @@ function update() {
     }
 
     // 적 위치 값 업데이트
-    enemy.updateEnemies(canvas);
+    enemy.update(canvas);
 }
 
 let bullets = [];
@@ -168,7 +172,7 @@ function drawPlayer() {
     ctx.drawImage(img_player, player.x - player.width / 2, player.y - player.height / 2, player.width, player.height);
 
     // 적 그리기
-    enemy.drawEnemies(ctx);
+    enemy.draw(ctx);
 }
 
 function gameloop() {
@@ -185,8 +189,8 @@ function gameloop() {
 }
 
 // 적 생성 테스트
-enemy.createEnemy(enemy.MovePattern.LEFT);
-enemy.createEnemy(enemy.MovePattern.RIGHT);
-enemy.createEnemy(enemy.MovePattern.FORWARD);
+enemy.createEnemy(enemy.MovePattern.LEFT, "../images/PNG/Image79.png");
+enemy.createEnemy(enemy.MovePattern.RIGHT, "../images/PNG/Image79.png");
+enemy.createEnemy(enemy.MovePattern.FORWARD, "../images/PNG/Image79.png");
 
 gameloop();
