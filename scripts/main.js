@@ -18,11 +18,17 @@ img_bullet.src = "../images/bullet.png";
 img_bomb.src = "../images/bomb.png";
 img_gameover.src = "../images/gameover.jpg";
 
+            //let img = new Image(); // new 키워드로 빈 이미지 객체 생성
+            //img.src = 'py.png';
+            //img.onload = () => ctx.drawImage(img,50,50);
+
 
 //todo
 // 총알 개수 늘리기
 // 폭탄 화면 안뚫고 비행기 앞에서 폭발하면서 미사일 제거
 // 충돌 감지
+// life 이미지 심기(onload)
+
 
 // 플레이어
 let player = {
@@ -41,7 +47,7 @@ let player = {
 let fps = 200;
 let bulletTime = 0;
 let bombTime = 0;
-let lives = 3;
+let life = 3;
 
 var keys = [];
 // map 설정
@@ -118,9 +124,9 @@ let bullets = [];
 // 총알 발사 함수
 function shootBullet() {
     let bullet = {
-        x : player.x + player.width / 2 - 28, // 비행기 중앙에서 발사
+        x : player.x + player.width / 2 - 32, // 비행기 중앙에서 발사
         y : player.y - 30, // 배행기 위치에서 발사
-        width : 5, // 총알 너비
+        width : 15, // 총알 너비
         height : 20, // 총알 높이
         speed : 5 // 총알 속도
     };
@@ -214,21 +220,21 @@ function handleCollision() {
     enemy.enemies.forEach((oneEnemy) => {
         // 적과 비행기의 충돌 처리
         if(checkCollision(oneEnemy, player) && !player.isInvincible){
-            lives -= 1;
+            life -= 1;
             player.isInvincible = true; // 무적 상태 전환
             
             let blinkCount = 0;
             let blinkInterval = setInterval(() => {
                 player.isVisible = !player.isVisible; // 깜빡임 효과
-                bliknkCount ++;
-                if (blinkCount > 2){ // 깜빡임 횟수
+                blinkCount ++;
+                if (blinkCount > 5){ // 깜빡임 횟수
                     clearInterval(blinkInterval); 
                     player.isVisible = true; // 원래 상태 복구
                     player.isInvincible = false; // 무적 상태 해제
                 }
             }, 200); // 0.2초마다 깜빡임
             
-            if (lives <= 0) {
+            if (life <= 0) {
             isGameOver = true;
             }
         }
@@ -244,39 +250,21 @@ function gameOver(){
 }
 
 // ####### 그리기 ##########
-function drawPlayer() {
-    // 캔버스 초기화
-    ctx.clearRect(0, 0, 450, 600);
-    
-    item.draw(ctx);
-    
-    // 맵 그리기
+function drawMap(){
     map.draw(ctx);
+}
 
-    // 플레이어 그리기
+function drawPlayer() {
     ctx.drawImage(img_player, player.x - player.width / 2, player.y - player.height / 2, player.width, player.height);
-
 }
 
-function drawEnemy(){
+function drawEtc(){
     enemy.draw(ctx);
+    item.draw(ctx);    
 }
 
-function gameloop() {
-    if (isGameOver){
-        gameOver();
-        return;
-    }
-    
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
+function drawAttack(){
     update(); // 키보드 입력
-    
-    if(player.isVisible !== false){
-        drawPlayer(); // 플레이어 그리기
-    }
-
-    drawEnemy(); // 적 그리기
     
     drawBullets(); // 총알 그리기
     updateBullets(); // 총알 위치 업데이트
@@ -285,11 +273,35 @@ function gameloop() {
     updateBombs(); // 폭탄 위치 업데이트
     
     handleCollision(); // 충돌 감지 및 처리
-    
-    // 목숨 표시
+}
+
+function drawLife(){
     ctx.fillStyle = 'white';
     ctx.font = '20px Arial';
-    ctx.fillText('Lives : ' + lives, 10, 60);
+    ctx.fillText('life : ' + life, 10, 60);
+}
+
+
+
+
+function gameloop() {
+    if (isGameOver){
+        gameOver();
+        return;
+    }
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawMap(); // 맵 그리기
+    drawEtc(); // 적 & 아이템 그리기
+    
+    
+    if(player.isVisible){
+        drawPlayer(); // 플레이어 그리기
+    }
+
+    drawAttack(); // 키보드, 총알, 폭탄, 충돌 처리
+    drawLife(); // life 그리기
+
     
     requestAnimationFrame(gameloop);
 }
