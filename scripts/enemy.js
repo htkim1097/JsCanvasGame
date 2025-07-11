@@ -1,5 +1,6 @@
 // k250710 모듈 생성
 
+
 // 이동 패턴
 export const MovePattern = {
     FORWARD: 0,
@@ -14,6 +15,8 @@ const canvasHeight = 600;
 // 적 객체 배열
 const enemies = new Array();
 const effects = new Array();
+
+export { enemies };
 
 // 소형 적 객체
 function SmallEnemy(movePattern, imageSrc) {
