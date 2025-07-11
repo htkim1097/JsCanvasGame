@@ -1,5 +1,6 @@
 import * as enemy from './enemy.js';
 import * as map from './map.js';
+import * as item from './item.js';
 
 // 캔버스 객체 생성
 //450 x 600
@@ -99,6 +100,9 @@ function update() {
             }   
     }
 
+    poweritem.update(canvas);
+    bombitem.update(canvas);
+    
     // 적 위치 값 업데이트
     enemy.update(canvas);
 }
@@ -168,6 +172,8 @@ function updateBombs() {
 
 function drawPlayer() {
     ctx.clearRect(0, 0, 450, 600);
+    
+    item.draw(ctx);
     // 플레이어 그리기
     ctx.drawImage(img_player, player.x - player.width / 2, player.y - player.height / 2, player.width, player.height);
 
