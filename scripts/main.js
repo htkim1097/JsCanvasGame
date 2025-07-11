@@ -11,9 +11,12 @@ let ctx = canvas.getContext("2d");
 let img_player = new Image();
 let img_bullet = new Image();
 let img_bomb = new Image();
+let img_gameover = new Image();
 img_player.src = "../images/png/Image45.png";
 img_bullet.src = "../images/bullet.png";
 img_bomb.src = "../images/bomb.png";
+img_gameover.src = "../images/gameover.jpg";
+
 
 //todo
 // 총알 개수 늘리기
@@ -26,7 +29,6 @@ let player = {
     y: 550,
     width: 50,
     height: 50,
-    life: 3,
     bomb: 2,
     attack: 1, // 총알 갯수
     speed: 3,
@@ -38,8 +40,9 @@ let player = {
 let fps = 200;
 let bulletTime = 0;
 let bombTime = 0;
+let lives = 3;
 
-var keys = [];
+let keys = [];
 
 document.addEventListener("keydown", (e) => {
     keys[e.keyCode] = true;
@@ -103,6 +106,7 @@ function update() {
     enemy.update(canvas);
 }
 
+// ####### 총알 함수 ##########
 let bullets = [];
 
 // 총알 발사 함수
@@ -132,11 +136,11 @@ function updateBullets(){
         // 총알이 화면을 벗어나면 리스트에서 제거
         if (bullet.y < 0) {
             bullets.splice(index, 1); // 총알 제거
-        // 총알 발사 딜레이 주기
         }
     });
 }
 
+// ####### 폭탄 함수 ##########
 let bombs = [];
 
 function shootBomb() {
@@ -166,24 +170,120 @@ function updateBombs() {
     });
 }
 
+// ####### 충돌 감지 ##########
+let isGameOver = false; 
+
+function checkCollision(obj1, obj2){
+    return(
+        obj1.x < obj2.x + obj2.width && 
+        obj1.x + obj1.width > obj2.x &&
+        obj1.y < obj2.y + obj2.height &&
+        obj1.y + obj1.height > obj2.y
+    );
+}
+
+function handleCollision() {
+    bullets.forEach((bullet, bulletIndex) => {
+        enemy.enemies.forEach((oneEnemy, enemyIndex) => {
+            // 총알과 적의 충돌 처리
+            if (checkCollision(bullet, oneEnemy)){
+                // 충돌시 적과 총알을 배열에서 제거
+                bullets.splice(bulletIndex, 1); // 총알 제거
+                enemy.enemies.splice(enemyIndex, 1); // 적 제거
+            }
+        });
+    });
+    
+    bombs.forEach((bomb, bombIndex) => {
+    enemy.enemies.forEach((oneEnemy, enemyIndex) => {
+        // 폭탄과 적의 충돌 처리
+        if (checkCollision(bomb, oneEnemy)){
+            // 충돌시 적과 폭탄을 배열에서 제거
+            bombs.splice(bombIndex, 1); // 총알 제거
+            enemy.enemies.splice(enemyIndex, 1); // 적 제거
+            }
+        });
+    });
+    
+    enemy.enemies.forEach((oneEnemy) => {
+        // 적과 비행기의 충돌 처리
+        if(checkCollision(oneEnemy, player) && !player.isInvincible){
+            lives -= 1;
+            player.isInvincible = true; // 무적 상태 전환
+            
+            let blinkCount = 0;
+            let blinkInterval = setInterval(() => {
+                player.isVisible = !player.isVisible; // 깜빡임 효과
+                bliknkCount ++;
+                if (blinkCount > 2){ // 깜빡임 횟수
+                    clearInterval(blinkInterval); 
+                    player.isVisible = true; // 원래 상태 복구
+                    player.isInvincible = false; // 무적 상태 해제
+                }
+            }, 200); // 0.2초마다 깜빡임
+            
+            if (lives <= 0) {
+            isGameOver = true;
+            }
+        }
+    });
+}
+
+
+function gameOver(){
+    //ctx.fillStyle = 'red';
+    //ctx.font = '48px Arial';
+    //ctx.fillText('Game Over', canvas.width / 2 - 120, canvas.height / 2);
+    ctx.drawImage(img_gameover, 0, 0, canvas.width, canvas.height);
+}
+
+
+
+
+
+
+
+
+// ####### 그리기 ##########
 function drawPlayer() {
     ctx.clearRect(0, 0, 450, 600);
     // 플레이어 그리기
     ctx.drawImage(img_player, player.x - player.width / 2, player.y - player.height / 2, player.width, player.height);
 
-    // 적 그리기
+}
+
+function drawEnemy(){
     enemy.draw(ctx);
 }
 
 function gameloop() {
+    if (isGameOver){
+        gameOver();
+        return;
+    }
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
     update(); // 키보드 입력
-    drawPlayer(); // 플레이어 및 적 그리기
+    
+    if(player.isVisible !== false){
+        drawPlayer(); // 플레이어 그리기
+    }
+
+    drawEnemy(); // 적 그리기
     
     drawBullets(); // 총알 그리기
     updateBullets(); // 총알 위치 업데이트
     
-    drawBombs();
-    updateBombs();
+    drawBombs(); // 폭탄 그리기
+    updateBombs(); // 폭탄 위치 업데이트
+    
+    handleCollision(); // 충돌 감지 및 처리
+    
+    // 목숨 표시
+    ctx.fillStyle = 'white';
+    ctx.font = '20px Arial';
+    ctx.fillText('Lives : ' + lives, 10, 60);
     
     requestAnimationFrame(gameloop);
 }
