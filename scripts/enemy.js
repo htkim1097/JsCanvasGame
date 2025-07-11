@@ -186,6 +186,7 @@ export function update(canvas) {
         let b = bullets[i];
 
         b.y += 5;
+
         if (b.y > canvasHeight || b.y < 0 || b.x > canvasWidth || b.x < 0) {
             bullets.splice(i, 1);
         }
@@ -194,46 +195,39 @@ export function update(canvas) {
 
 // 적의 이동 패턴에 따라 좌표값을 수정한다
 function moveEnemy(enemy) {
-    switch (typeof enemy) {
-        case RedSmallPlane:
-            if (enemy.pattern == RedSmallPattern.FORWARD){
-
-            }
-            else{
-
-            }
-
-            break;
-
-        case BlueSmallPlane:
-            if (enemy.pattern == BlueSmallPattern.FORWARD) {
+    if (enemy instanceof RedSmallPlane) {
+        if (enemy.movePattern == RedSmallPattern.FORWARD) {
+            enemy.y += enemy.speed;
+        }
+        else if (enemy.movePattern == RedSmallPattern.RETURN){
+            if (enemy.updateCnt < 140){
                 enemy.y += enemy.speed;
-            }
-            else if (enemy.pattern == BlueSmallPattern.LEFT) {
-
-            }
-            else if (enemy.pattern == BlueSmallPattern.RIGHT) {
-                enemy.y += enemy.speed;
-                enemy.x -= 1;
-            }
-
-            break;
-
-        case MiddlePlane:
-            if (enemy.updateCnt < rangeRandom(40, 70)) {
-
             }
             else {
-            
+                enemy.y -= enemy.speed;
             }
+        }
+    }
+    else if (enemy instanceof BlueSmallPlane) {
+        if (enemy.movePattern == BlueSmallPattern.FORWARD) {
+            enemy.y += enemy.speed;
+        }
+        else if (enemy.movePattern == BlueSmallPattern.LEFT) {
 
-            break;
-        case LargePlane:
-            
-            break;
+        }
+        else if (enemy.movePattern == BlueSmallPattern.RIGHT) {
+            enemy.y += enemy.speed;
+            enemy.x -= 1;
+        }
+    }
+    else if (enemy instanceof MiddlePlane) {
+
+    }
+    else if (enemy instanceof LargePlane) {
+
     }
 
-    if (enemy.updateCnt > rangeRandom(30, 70) && enemy.updateCnt % 25 == 0) {
+    if (enemy.updateCnt > rangeRandom(30, 70) && enemy.updateCnt % 50 == 0) {
         bullets.push(new RedBullet(enemy.x, enemy.y));
     }
 }
@@ -248,8 +242,11 @@ function createEnemy() {
     totalUpdateCnt++;
     console.log(totalUpdateCnt);
 
-    if (totalUpdateCnt == 100) {
-        enemies.push(new RedSmallPlane(100, RedSmallPattern.FORWARD));
-
+    switch (totalUpdateCnt){
+        case 100:
+            enemies.push(new RedSmallPlane(50, RedSmallPattern.FORWARD));
+            break;
+        case 110:
+            enemies.push(new RedSmallPlane(50, RedSmallPattern.FORWARD));
     }
 }

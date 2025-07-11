@@ -306,9 +306,4 @@ function gameloop() {
     requestAnimationFrame(gameloop);
 }
 
-// 적 생성 테스트
-enemy.createEnemy(100, enemy.MovePattern.LEFT);
-enemy.createEnemy(200, enemy.MovePattern.RIGHT);
-enemy.createEnemy(10, enemy.MovePattern.FORWARD);
-
 gameloop();
