@@ -2,48 +2,43 @@
 const canvasWidth = 450;
 const canvasHeight = 600;
 
+let totalUpdateCnt = 0;
+
+export const enemies = new Array();  // 적 비행기 객체 배열
+export const bullets = new Array();  // 탄 객체 배열
+const effects = new Array();  // 효과 객체 배열
+
 // 이동 패턴
-export const MovePattern = {
+export const RedSmallPattern = {
+    FORWARD: 0,
+    RETURN: 1
+};
+
+// 소형 적 비행기1
+// 상단에서 출현 -> 직진 공격
+function RedSmallPlane(x, pattern) {
+    this.x = x;
+    this.y = -100;
+    this.width = 38;
+    this.height = 38;
+    this.life = 1;
+    this.speed = 3;
+    this.updateCnt = 0;
+    this.movePattern = pattern;
+    this.img = new Image(this.width, this.height);
+    this.img.src = "../images/PNG/Image79.png";
+}
+
+// 이동 패턴
+export const BlueSmallPattern = {
     FORWARD: 0,
     LEFT: 1,
     RIGHT: 2
 };
 
-export const enemies = new Array();  // 적 비행기 객체 배열
-const effects = new Array();  // 효과 객체 배열
-const bullets = new Array();  // 탄 객체 배열
-
-// 소형 적 비행기1
-// 상단에서 출현 -> 직진 공격
-function RedSmallPlane(x, movePattern) {
-    this.x;
-    this.y = -100;
-    this.width = 38;
-    this.height = 38;
-    this.life = 1;
-    this.speed = 4;
-    this.updateCnt = 0;
-    this.movePattern = movePattern;
-    this.img = new Image(this.width, this.height);
-    this.img.src = "../images/PNG/Image79.png";
-
-    // 이동 패턴에 따라 초기 위치값 설정
-    switch (movePattern) {
-        case MovePattern.FORWARD:
-            this.x = rangeRandom(this.width, canvasWidth - this.width);
-            break;
-        case MovePattern.LEFT:
-            this.x = rangeRandom(canvasWidth / 2, canvasWidth - this.width);
-            break;
-        case MovePattern.RIGHT:
-            this.x = rangeRandom(this.width, canvasWidth / 2);
-            break;
-    }
-}
-
 // 소형 적 비행기2
 // 상단에서 출현 -> 좌우 선회 공격
-function BlueSmallPlane(x, movePattern) {
+function BlueSmallPlane(x, pattern) {
     this.x = x;
     this.y = -100;
     this.width = 40;
@@ -51,22 +46,9 @@ function BlueSmallPlane(x, movePattern) {
     this.life = 1;
     this.speed = 3;
     this.updateCnt = 0;
-    this.movePattern = movePattern;
+    this.movePattern = pattern;
     this.img = new Image(this.width, this.height);
     this.img.src = "../images/PNG/Image104.png";
-
-    // 이동 패턴에 따라 초기 위치값 설정
-    switch (movePattern) {
-        case MovePattern.FORWARD:
-            this.x = rangeRandom(this.width, canvasWidth - this.width);
-            break;
-        case MovePattern.LEFT:
-            this.x = rangeRandom(canvasWidth / 2, canvasWidth - this.width);
-            break;
-        case MovePattern.RIGHT:
-            this.x = rangeRandom(this.width, canvasWidth / 2);
-            break;
-    }
 }
 
 // 중형 적 비행기
@@ -99,8 +81,8 @@ function LargePlane(x, y) {
 
 // 적색 저속탄
 function RedBullet(x, y) {
-    this.x;
-    this.y;
+    this.x = x;
+    this.y = y;
     this.width = 17;
     this.height = 17;
     this.speed = 1;
@@ -110,13 +92,13 @@ function RedBullet(x, y) {
 
 // 청색 고속탄
 function BlueBullet(x, y) {
-    this.x;
-    this.y;
+    this.x = x;
+    this.y = y;
     this.width = 17;
     this.height = 17;
     this.speed = 2;
     this.img = new Image(this.width, this.height);
-    this.img.src = "../images/enemy_bullet2.png";  
+    this.img.src = "../images/enemy_bullet2.png";
 }
 
 // 폭발 이펙트 객체
@@ -137,11 +119,6 @@ function explosionAnim(x, y, w, h) {
     }
 }
 
-// 적 항공기 생성(테스트용)
-export function createEnemy(x, movePattern) {
-    enemies.push(new RedSmallPlane(x, movePattern));
-}
-
 export function draw(ctx) {
     // 적 그리기
     for (let i = 0; i < enemies.length; i++) {
@@ -157,7 +134,7 @@ export function draw(ctx) {
         }
     }
 
-    for (let i = 0; i < bullets.length; i++){
+    for (let i = 0; i < bullets.length; i++) {
         let bullet = bullets[i];
 
         if (bullet.img.src != undefined) {
@@ -183,6 +160,8 @@ export function draw(ctx) {
 }
 
 export function update(canvas) {
+    createEnemy();
+
     for (let i = 0; i < enemies.length; i++) {
         let enemy = enemies[i];
         enemy.updateCnt++;
@@ -202,35 +181,59 @@ export function update(canvas) {
             enemies.splice(i, 1);   // 적 삭제; i번째 아이템부터 1개 삭제한다는 의미
         }
     }
+
+    for (let i = 0; i < bullets.length; i++) {
+        let b = bullets[i];
+
+        b.y += 5;
+        if (b.y > canvasHeight || b.y < 0 || b.x > canvasWidth || b.x < 0) {
+            bullets.splice(i, 1);
+        }
+    }
 }
 
 // 적의 이동 패턴에 따라 좌표값을 수정한다
 function moveEnemy(enemy) {
-    switch (enemy.movePattern) {
-        case MovePattern.FORWARD:
-            enemy.y += enemy.speed;
+    switch (typeof enemy) {
+        case RedSmallPlane:
+            if (enemy.pattern == RedSmallPattern.FORWARD){
+
+            }
+            else{
+
+            }
+
             break;
-        case MovePattern.LEFT:
-            if (enemy.updateCnt < rangeRandom(40, 70)) {
+
+        case BlueSmallPlane:
+            if (enemy.pattern == BlueSmallPattern.FORWARD) {
                 enemy.y += enemy.speed;
             }
-            else {
+            else if (enemy.pattern == BlueSmallPattern.LEFT) {
+
+            }
+            else if (enemy.pattern == BlueSmallPattern.RIGHT) {
                 enemy.y += enemy.speed;
                 enemy.x -= 1;
             }
+
             break;
-        case MovePattern.RIGHT:
+
+        case MiddlePlane:
             if (enemy.updateCnt < rangeRandom(40, 70)) {
-                enemy.y += enemy.speed;
+
             }
             else {
-                enemy.y += enemy.speed;
-                enemy.x += 1;
+            
             }
+
+            break;
+        case LargePlane:
+            
             break;
     }
 
-    if (enemy.updateCnt < rangeRandom(40, 70) && enemy.updateCnt % 5 == 0) {
+    if (enemy.updateCnt > rangeRandom(30, 70) && enemy.updateCnt % 25 == 0) {
         bullets.push(new RedBullet(enemy.x, enemy.y));
     }
 }
@@ -238,4 +241,15 @@ function moveEnemy(enemy) {
 // 최소, 최대 값 사이의 정수를 랜덤 반환한다
 function rangeRandom(min, max) {
     return Math.floor((Math.random() * (max - min)) + min);
+}
+
+// 적 항공기 생성
+function createEnemy() {
+    totalUpdateCnt++;
+    console.log(totalUpdateCnt);
+
+    if (totalUpdateCnt == 100) {
+        enemies.push(new RedSmallPlane(100, RedSmallPattern.FORWARD));
+
+    }
 }
