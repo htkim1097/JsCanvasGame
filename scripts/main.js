@@ -68,7 +68,7 @@ function update() {
     // 오른쪽
     if (keys[39]) {
         player.x += player.speed;
-        if(player.x + player.width / 2 > canvas.width){ // 화면 경게 제한
+        if(player.x + player.width / 2 > canvas.width){ // 화면 경게 제한(구글링)
             player.x = canvas.width - player.width / 2;
         }
     }
@@ -118,6 +118,7 @@ function update() {
     enemy.update(canvas);
 }
 
+
 // ####### 총알 함수 ##########
 let bullets = [];
 
@@ -152,6 +153,7 @@ function updateBullets(){
     });
 }
 
+
 // ####### 폭탄 함수 ##########
 let bombs = [];
 
@@ -161,7 +163,9 @@ function shootBomb() {
         y : player.y - 30,
         width : 30,
         height : 30,
-        speed : 10
+        speed : 10,
+        targetY : player.y - 150, // 플레이어 기준 앞으로(y축) 150만큼 올라감
+        exploded : false // 폭발 여부 체크
     };
     bombs.push(bomb);
 }
@@ -174,15 +178,28 @@ function drawBombs() {
 
 function updateBombs() {
     bombs.forEach((bomb, index) => {
-        bomb.y -= bomb.speed;
+        if (!bomb.exploded){
+            bomb.y -= bomb.speed;
         
-        if (bomb.y < 0) {
-            bombs.splice(index, 1);
+            // 목표 y 위치에 도달 했으면 폭발
+            if(bomb.y <= bomb.targetY){
+                bomb.exploded = true;
+
+                // 폭발시 적 미사일 제거
+                if (enemy.enemiesMissiles){
+                    enemy.enemiesMissiles = [];
+                }
+
+                enemy.enemies = [];
+
+                bombs.splice(index, 1);
+            }
         }
     });
 }
 
-// ####### 충돌 감지 ##########
+
+// ####### 충돌 처리 ##########
 let isGameOver = false; 
 
 function checkCollision(obj1, obj2){
@@ -206,16 +223,16 @@ function handleCollision() {
         });
     });
     
-    bombs.forEach((bomb, bombIndex) => {
-    enemy.enemies.forEach((oneEnemy, enemyIndex) => {
-        // 폭탄과 적의 충돌 처리
-        if (checkCollision(bomb, oneEnemy)){
-            // 충돌시 적과 폭탄을 배열에서 제거
-            bombs.splice(bombIndex, 1); // 총알 제거
-            enemy.enemies.splice(enemyIndex, 1); // 적 제거
-            }
-        });
-    });
+    // bombs.forEach((bomb, bombIndex) => {
+    // enemy.enemies.forEach((oneEnemy, enemyIndex) => {
+    //     // 폭탄과 적의 충돌 처리
+    //     if (checkCollision(bomb, oneEnemy)){
+    //         // 충돌시 적과 폭탄을 배열에서 제거
+    //         bombs.splice(bombIndex, 1); // 총알 제거
+    //         enemy.enemies.splice(enemyIndex, 1); // 적 제거
+    //         }
+    //     });
+    // });
     
     enemy.enemies.forEach((oneEnemy) => {
         // 적과 비행기의 충돌 처리
@@ -282,8 +299,7 @@ function drawLife(){
 }
 
 
-
-
+// ####### gameloop ##########
 function gameloop() {
     if (isGameOver){
         gameOver();
