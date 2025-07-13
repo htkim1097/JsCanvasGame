@@ -35,7 +35,7 @@ function Item(x, y, type) {
 // 플레이어 파괴 위치
 // 아이템 생성 => 적 파괴시 or 플레이어 파괴시
 //export function createItem(x, y, type) {
-//    itemArray.push(new Item(x, y, type));
+//    items.push(new Item(x, y, type));
 //}
 
 // 테스트용
@@ -47,7 +47,7 @@ export function createItem(x, y, type = itemType.power) {
 
 
 
-// 위치, 상태 업데이트 함수 >> 아이템 이동
+// 아이템 위치, 상태 업데이트 함수 >> 아이템 이동
 export function update(canvas) {
     for (let i = 0; i < items.length; i++) {
         let item = items[i];
@@ -57,7 +57,7 @@ export function update(canvas) {
 }
 
 
-// 그리기 함수
+// 아이템 캔버스 그리기 함수
 export function draw(ctx) {
     for (let i = 0; i < items.length; i++) {
         let item = items[i];
@@ -71,7 +71,6 @@ export function draw(ctx) {
         
     }
 }
-//
 //    // 아이템 그리기
 //    for (let i = 0; i < items.length; i++) {
 //        let item = items[i];
@@ -87,12 +86,10 @@ export function draw(ctx) {
 //        else {
 //            ctx.fillStyle = 'green';
 //            ctx.fillRect(item.x, item.y, item.width, item.height);
-//        }
-//    
+//        } 
 //}
 
-
-// 아이템 이동. (맵 테두리에 부딪히면 튕겨나가게 - 충돌 방지)  중요!
+// 아이템 이동. (맵 테두리에 부딪히면 튕겨나가게 - 충돌 방지) 
 function moveItem(item) {
     item.updateCnt++;
 
@@ -100,6 +97,7 @@ function moveItem(item) {
         case MovePattern.FORWARD:
             item.y += item.speed;
             break;
+            
         case MovePattern.LEFT:
             if (item.updateCnt < rangeRandom(40, 70)) {
                 item.y += item.speed;
@@ -115,7 +113,7 @@ function moveItem(item) {
             }
             else {
                 item.y += item.speed;
-                ITEM.x += 1;
+                item.x += 1;
             }
             break;
     }
