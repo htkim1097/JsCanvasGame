@@ -115,7 +115,7 @@ function update() {
     item.update(canvas);
     
     // 적 위치 값 업데이트
-    enemy.update(canvas);
+    enemy.update(canvas, new Array(player.x, player.y));
 }
 
 
@@ -190,7 +190,7 @@ function updateBombs() {
                     enemy.enemiesMissiles = [];
                 }
 
-                enemy.enemies = [];
+                //enemy.enemies = [];
 
                 bombs.splice(index, 1);
             }
@@ -218,7 +218,8 @@ function handleCollision() {
             if (checkCollision(bullet, oneEnemy)){
                 // 충돌시 적과 총알을 배열에서 제거
                 bullets.splice(bulletIndex, 1); // 총알 제거
-                enemy.enemies.splice(enemyIndex, 1); // 적 제거
+                // enemy.enemies.splice(enemyIndex, 1); // 적 제거
+                enemy.damaged(oneEnemy, 1);  // damaged(적 객체, 피해량)
             }
         });
     });
