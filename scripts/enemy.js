@@ -148,19 +148,23 @@ function LargePlane(x, y, destX, destY) {
     this.isDestroyed = false;
 
     this.fire = async (bullet, num, intervalMs) => {
-        await sleep(500);
+        await sleep(1500);
         if (bullet == BulletType.RED) {
             for (let i = 0; i < num; i++) {
                 if (this.isDestroyed) {
                     return;
                 }
-                bullets.push(new RedBullet(this.x + 10, this.y + 35, ));
-                bullets.push(new RedBullet(this.x + 10, this.y + 35));
-                bullets.push(new RedBullet(this.x + 10, this.y + 35));
 
-                bullets.push(new RedBullet(this.x + 100, this.y + 35, 100, this.y + Math.cos(10), this.x + Math.sin(30)));
-                bullets.push(new RedBullet(this.x + 100, this.y + 35));
-                bullets.push(new RedBullet(this.x + 100, this.y + 35));
+                let startAng = 60;
+                for (let j = 0; j < 5; j++) {
+                    bullets.push(new RedBullet(this.x + 10, this.y + 35, this.x + 10 + 100 * Math.cos(degToRad(startAng + (15 * j))), this.y + 35 + 100 * Math.sin(degToRad(startAng + (15 * j)))));
+                }
+
+                for (let j = 0; j < 5; j++) {
+                    bullets.push(new RedBullet(this.x + 100, this.y + 35, this.x + 100 + 100 * Math.cos(degToRad(startAng + (15 * j))), this.y + 35 + 100 * Math.sin(degToRad(startAng + (15 * j)))));
+                }
+
+
                 await sleep(intervalMs);
             }
         }
@@ -169,11 +173,11 @@ function LargePlane(x, y, destX, destY) {
                 if (this.isDestroyed) {
                     return;
                 }
-                bullets.push(new BlueBullet(this.x + 57, this.y + 70));
+                bullets.push(new BlueBullet(this.x + 57, this.y + 70, playerPos[0], playerPos[1]));
                 await sleep(50);
-                bullets.push(new BlueBullet(this.x + 56, this.y + 70));
+                bullets.push(new BlueBullet(this.x + 56, this.y + 70, playerPos[0], playerPos[1]));
                 await sleep(50);
-                bullets.push(new BlueBullet(this.x + 57, this.y + 70));
+                bullets.push(new BlueBullet(this.x + 57, this.y + 70, playerPos[0], playerPos[1]));
                 await sleep(intervalMs);
             }
         }
@@ -297,7 +301,7 @@ export function draw(ctx) {
         }
 
         if (eff.updateCnt % eff.interval == 0) {
-            ctx.drawImage(eff.imgArr[n], eff.x, eff.y);
+            ctx.drawImage(eff.imgArr[n], eff.x, eff.y, eff.width, eff.height);
         }
     }
 }
@@ -520,7 +524,7 @@ function checkDelCondition(enemy, canvas) {
     }
 }
 
-// 비동기 지연시간
+// 비동기 지연
 async function sleep(ms) {
     return new Promise((r) => setTimeout(r, ms));
 }
@@ -530,23 +534,25 @@ function rangeRandom(min, max) {
     return Math.floor((Math.random() * (max - min)) + min);
 }
 
+// 각도를 라디안으로  
+function degToRad(deg) {
+    return deg * Math.PI / 180;
+}
 
 // 적 항공기 생성
 function createEnemy() {
     switch (frameCnt) {
         case 100:
-            addLargePlane(1, 0, 0, -100, 200, 170);
+            addLargePlane(1, 0, 0, -100, 80, 100);
             //addRedSmallPlane(5, 200);
             //addBlueSmallPlane(10, 200, true, -1, BlueSmallPattern.RIGHT);
             //addMiddlePlane(3, 300, 150, -50, 100, 100, true);
             //addMiddlePlane(3, 300, 350, -50, 300, 100, true);
             break;
         case 200:
-            addLargePlane(1, 0, 0, -100, 300, 170);
             //addBlueSmallPlane(3, 200, true, 100, BlueSmallPattern.RIGHT);
             break;
         case 300:
-            addLargePlane(1, 0, 0, -100, 10, 170);
             //addBlueSmallPlane(3, 200, true, 300, BlueSmallPattern.LEFT);
             break;
         case 350:
