@@ -2,8 +2,8 @@
 const canvasWidth = 450;
 const canvasHeight = 600;
 
-const redBulletSize = 10;
-const blueBulletSize = 14;
+const redBulletSize = 14;
+const blueBulletSize = 12;
 
 let playerPos = [];
 
@@ -184,7 +184,7 @@ function BlueBullet(x, y, isHoming) {
 }
 
 // 폭발 이펙트 객체
-function explosionAnim(x, y, w, h) {
+function ExplosionAnim(x, y, w, h) {
     this.x = x;
     this.y = y;
     this.width = w;
@@ -377,7 +377,7 @@ function checkDelCondition(enemy, canvas) {
     // 체력이 0 이하일 때
     if (enemy.life <= 0) {
         // 현재 위치에 폭발 이펙트 생성
-        effects.push(new explosionAnim(enemy.x, enemy.y, enemy.width, enemy.height));
+        effects.push(new ExplosionAnim(enemy.x, enemy.y, enemy.width, enemy.height));
         enemy.isDestroyed = true;
         enemies.splice(enemies.indexOf(enemy), 1);
     }
