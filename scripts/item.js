@@ -49,13 +49,6 @@ export function createItem(x, y, type) {
     items.push(new Item(x, y, type));
 }
 
-// 벽에 충돌 시 랜덤 방향으로 튕기에 하는 함수
-function bounceRandom(item) {
-    const speed = Math.sqrt(item.dx ** 2 + item.dy ** 2);
-    const angle = Math.random() * 2 * Math.PI; //0~360도 랜덤 각도 생성
-    item.dx = Math.cos(angle) * speed; //x축 방향 기준 이동
-    item.dy = Math.sin(angle) * speed; //y축 방향 기준 이동
-}
 
 
 // 아이템 위치, 상태 업데이트 함수
@@ -71,14 +64,11 @@ export function update(canvas) {
         if(item.x + item.width >= canvas.width || item.x < 0) {
             item.x = Math.max(0, Math.min(canvas.width - item.width, item.x)); //화면 밖으로 나가지 않게 위치 보정
             item.dx *= -1; //x 축 방향 반전(좌, 우)
-            bounceRandom(item); //랜덤 방향 튕기기
     }
         // 위아래 벽 충돌 감지
         if(item.y + item.height >= canvas.height || item.y < 0) {
             item.y = Math.max(0, Math.min(canvas.height - item.height, item.y));
             item.dy *= -1; //y축 방향 반전(위, 아래)
-            bounceRandom(item);
-        
     }
 }
 }
