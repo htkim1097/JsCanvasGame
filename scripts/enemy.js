@@ -144,11 +144,63 @@ function LargePlane(x, y, destX, destY) {
     this.updateCnt = 0;
     this.img = new Image(this.width, this.height);
     this.img.src = "../images/PNG/Image96.png";
-    this.gunX = this.x + (this.width / 2) - (redBulletSize / 2)
     this.isDestroyed = false;
 
     this.fire = async (bullet, num, intervalMs) => {
         await sleep(1500);
+        if (bullet == BulletType.RED) {
+            for (let i = 0; i < num; i++) {
+                if (this.isDestroyed) {
+                    return;
+                }
+
+                let startAng = 60;
+                for (let j = 0; j < 5; j++) {
+                    bullets.push(new RedBullet(this.x + 10, this.y + 35, this.x + 10 + 100 * Math.cos(degToRad(startAng + (15 * j))), this.y + 35 + 100 * Math.sin(degToRad(startAng + (15 * j)))));
+                }
+
+                for (let j = 0; j < 5; j++) {
+                    bullets.push(new RedBullet(this.x + 100, this.y + 35, this.x + 100 + 100 * Math.cos(degToRad(startAng + (15 * j))), this.y + 35 + 100 * Math.sin(degToRad(startAng + (15 * j)))));
+                }
+
+
+                await sleep(intervalMs);
+            }
+        }
+        else {
+            for (let i = 0; i < num; i++) {
+                if (this.isDestroyed) {
+                    return;
+                }
+                bullets.push(new BlueBullet(this.x + 57, this.y + 70, playerPos[0], playerPos[1]));
+                await sleep(50);
+                bullets.push(new BlueBullet(this.x + 56, this.y + 70, playerPos[0], playerPos[1]));
+                await sleep(50);
+                bullets.push(new BlueBullet(this.x + 57, this.y + 70, playerPos[0], playerPos[1]));
+                await sleep(intervalMs);
+            }
+        }
+
+    }
+}
+
+// 보스
+function BossPlane(x, y) {
+    this.x = x;
+    this.y = y;
+    this.destXs = [100];
+    this.destYs = [100];
+    this.width = 320;
+    this.height = 160;
+    this.life = 200;
+    this.speed = 1;
+    this.updateCnt = 0;
+    this.img = new Image(this.width, this.height);
+    this.img.src = "../images/PNG/Image94.png";
+    this.isDestroyed = false;
+
+    this.fire = async (bullet, num, intervalMs) => {
+        await sleep(2500);
         if (bullet == BulletType.RED) {
             for (let i = 0; i < num; i++) {
                 if (this.isDestroyed) {
@@ -431,6 +483,35 @@ function moveEnemy(enemy) {
             }
         }
     }
+    else if (enemy instanceof BossPlane) {
+        if (enemy.updateCnt < 200) {
+            enemy.y += enemy.speed;
+        }
+        else if (enemy.updateCnt > 300) {
+            if (enemy.updateCnt < 500) {
+                enemy.destX = 10;
+                enemy.destY = 80;
+            }
+            else if (enemy.updateCnt < 800){
+                enemy.destX = 130;
+                enemy.destY = 130;
+            }
+
+            let dx = enemy.destX - enemy.x;
+            let dy = enemy.destY - enemy.y;
+            let len = Math.sqrt(dx * dx + dy * dy);
+            let vx = dx / len;
+            let vy = dy / len;
+
+            if (enemy.destX - 10 > enemy.x || enemy.x > enemy.destX + 10) {
+                enemy.x += vx * enemy.speed;
+            }
+
+            if (enemy.y < enemy.destY - 10 || enemy.destY + 10 < enemy.y) {
+                enemy.y += vy * enemy.speed;
+            }
+        }
+    }
 }
 
 async function addRedSmallPlane(planeNum, intervalMs, isHoming, x = -1, pattern = RedSmallPattern.FORWARD) {
@@ -496,11 +577,18 @@ async function addMiddlePlane(planeNum, intervalMs, x, y, destX, destY, isHoming
 async function addLargePlane(planeNum, intervalMs, x, y, destX, destY) {
     for (let i = 1; i <= planeNum; i++) {
         let enemy = new LargePlane(x, y, destX, destY);
-        enemy.fire(BulletType.BLUE, 100, 3000);
+        enemy.fire(BulletType.BLUE, 100, 2000);
         enemy.fire(BulletType.RED, 500, 3000);
         enemies.push(enemy);
         await sleep(intervalMs);
     }
+}
+
+async function addBoss() {
+    let enemy = new BossPlane(canvasWidth / 2 - 160, -160);
+    // enemy.fire(BulletType.BLUE, 100, 2000);
+    // enemy.fire(BulletType.RED, 500, 3000);
+    enemies.push(enemy);
 }
 
 export function damaged(enemy, damage) {
@@ -518,7 +606,7 @@ function checkDelCondition(enemy, canvas) {
     }
 
     // 캔버스 바깥으로 넘어가면
-    if (enemy.y < -100 || enemy.y > canvas.height + 100 || enemy.x < -100 || enemy.x > canvas.width + 100) {
+    if (enemy.y < -180 || enemy.y > canvas.height + 180 || enemy.x < -180 || enemy.x > canvas.width + 180) {
         enemy.isDestroyed = true;
         enemies.splice(enemies.indexOf(enemy), 1);
     }
@@ -543,11 +631,12 @@ function degToRad(deg) {
 function createEnemy() {
     switch (frameCnt) {
         case 100:
-            addLargePlane(1, 0, 0, -100, 80, 100);
-            //addRedSmallPlane(5, 200);
-            //addBlueSmallPlane(10, 200, true, -1, BlueSmallPattern.RIGHT);
-            //addMiddlePlane(3, 300, 150, -50, 100, 100, true);
-            //addMiddlePlane(3, 300, 350, -50, 300, 100, true);
+            addBoss();
+            // addLargePlane(1, 0, 0, -100, 80, 100);
+            // addRedSmallPlane(5, 200);
+            // addBlueSmallPlane(10, 200, true, -1, BlueSmallPattern.RIGHT);
+            // addMiddlePlane(3, 300, 150, -50, 100, 100, true);
+            // addMiddlePlane(3, 300, 350, -50, 300, 100, true);
             break;
         case 200:
             //addBlueSmallPlane(3, 200, true, 100, BlueSmallPattern.RIGHT);
