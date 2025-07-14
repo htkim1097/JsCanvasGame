@@ -13,10 +13,15 @@ let img_player = new Image();
 let img_bullet = new Image();
 let img_bomb = new Image();
 let img_gameover = new Image();
+let img_left = new Image();
+let img_right = new Image();
+let img_die = new Image();
 img_player.src = "../images/png/Image45.png";
 img_bullet.src = "../images/bullet.png";
 img_bomb.src = "../images/bomb.png";
 img_gameover.src = "../images/gameover.jpg";
+img_left.src = "../images/left.png";
+img_right.src = "../images/right.png";
 
 // 플레이어
 let player = {
@@ -27,7 +32,8 @@ let player = {
     attack: 1, // 총알 갯수
     speed: 5,
     isInvincible: false, // 무적 상태
-    isVisible: true // HP 1개 차감후 깜빡이는 효과
+    isVisible: true, // HP 1개 차감후 깜빡이는 효과
+    img: img_player
 };
 
 let fps = 200;
@@ -55,6 +61,7 @@ function update() {
     // 오른쪽
     if (keys[39]) {
         player.x += player.speed;
+        player.img = img_right;
         // 플레이어가 오른쪽 경계를 넘어가지 않도록 제한(구글)
         if(player.x + player.width / 2 > canvas.width){
             // 오른쪽 경계 바로 안쪽으로 위치 고정
@@ -62,13 +69,17 @@ function update() {
         }
     }
     // 왼쪽
-    if (keys[37]) {
+    else if (keys[37]) {
         player.x -= player.speed;
+        player.img = img_left;
         // 왼쪽 경계 밖으로 나가지 않도록 제한
         if(player.x - player.width / 2 < 0){
             // 왼쪽 경계 바로 안쪽으로 위치 고정
             player.x = player.width / 2;
         }
+    }
+    else {
+        player.img = img_player;
     }
     // 위
     if (keys[38]) {
@@ -120,11 +131,11 @@ function shootBullet() {
     let totalWidth = (player.attack - 1) * space;
     for(let i = 0; i < player.attack; i++){
         let bullet = {
-            x: player.x + player.width / 2 - 32 - totalWidth / 2 + i * space,// 비행기 중앙에서 발사
-            y: player.y - 30, // 비행기 위치에서 발사
-            width: 15, // 총알 너비
-            height: 20, // 총알 높이
-            speed: 5 // 총알 속도
+            x: player.x + player.width / 2 - 36 - totalWidth / 2 + i * space,// 비행기 중앙에서 발사
+            y: player.y - 50, // 비행기 위치에서 발사
+            width: 20, // 총알 너비
+            height: 30, // 총알 높이
+            speed: 50 // 총알 속도
         };
         playerBullets.push(bullet);
     }
@@ -371,7 +382,7 @@ function drawMap() {
 }
 
 function drawPlayer() {
-    ctx.drawImage(img_player, player.x - player.width / 2, player.y - player.height / 2, player.width, player.height);
+    ctx.drawImage(player.img, player.x - player.width / 2, player.y - player.height / 2, player.width, player.height);
 }
 
 function drawEtc() {
