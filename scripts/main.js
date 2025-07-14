@@ -42,7 +42,7 @@ map.setMap(1);
 
 document.addEventListener("keydown", (e) => {
     keys[e.keyCode] = true;
-    console.log(e.keyCode);
+    // console.log(e.keyCode);
 });
 
 document.addEventListener("keyup", (e) => {
@@ -55,7 +55,7 @@ function update() {
     // 오른쪽
     if (keys[39]) {
         player.x += player.speed;
-        // 플레이어가 오른쪽 경계를 넘어가지 않도록 제한(구글링)
+        // 플레이어가 오른쪽 경계를 넘어가지 않도록 제한(구글)
         if(player.x + player.width / 2 > canvas.width){
             // 오른쪽 경계 바로 안쪽으로 위치 고정
             player.x = canvas.width - player.width / 2;
@@ -116,14 +116,18 @@ let playerBullets = [];
 
 // 총알 발사 함수
 function shootBullet() {
-    let bullet = {
-        x: player.x + player.width / 2 - 32, // 비행기 중앙에서 발사
-        y: player.y - 30, // 비행기 위치에서 발사
-        width: 15, // 총알 너비
-        height: 20, // 총알 높이
-        speed: 5 // 총알 속도
-    };
-    playerBullets.push(bullet);
+    let space = 10; // 총알 사이의 간격
+    let totalWidth = (player.attack - 1) * space;
+    for(let i = 0; i < player.attack; i++){
+        let bullet = {
+            x: player.x + player.width / 2 - 32 - totalWidth / 2 + i * space,// 비행기 중앙에서 발사
+            y: player.y - 30, // 비행기 위치에서 발사
+            width: 15, // 총알 너비
+            height: 20, // 총알 높이
+            speed: 5 // 총알 속도
+        };
+        playerBullets.push(bullet);
+    }
 }
 
 // 총알 그리기 함수
@@ -258,7 +262,7 @@ function updateBombs() {
     }
 }
 
-// ####### 충돌 처리 ##########(구글링, gpt)
+// ####### 충돌 처리 ##########(구글, gpt)
 let isGameOver = false; 
 
 function checkCollision(obj1, obj2){
@@ -271,7 +275,7 @@ function checkCollision(obj1, obj2){
 }
 
 function handleCollision() {
-    //console.log("item.Items:", item.Items);
+    // console.log("item.Items:", item.Items);
     // 플레이어 총알과 적 충돌 처리
     for (let i = playerBullets.length - 1; i >= 0; i--) {
         let bullet = playerBullets[i];
@@ -343,9 +347,13 @@ function handleCollision() {
 function addItem(item){
     switch(item.type){
         case 'power':
-            player.attack += 1;
+            // console.log("power");
+            if(player.attack < 5){
+                player.attack += 2;
+            }
             break;
         case 'bomb':
+            // console.log("bomb");
             bomb += 1;
             break;
         default:

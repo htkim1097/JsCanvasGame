@@ -42,6 +42,8 @@ this.dy = dirY * this.speed;
 
 // 테스트용
 createItem(100, 100, "power");
+createItem(100, 100, "power");
+createItem(100, 100, "power");
 createItem(100, 100, "bomb");
 createItem(100, 100, "bomb");
 
