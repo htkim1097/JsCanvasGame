@@ -22,29 +22,45 @@ const itemType = {
 function Item(x, y, type) {
     this.x = x;
     this.y = y;
-    this.w = 20;
-    this.h = 20;
+    this.width = 20;
+    this.height = 20;
     this.type = type;  // 타입 설정
     this.interval = 2;  // 이미지 전환 간격
     this.updateCnt = 0;  // 업데이트 횟수
-    this.speed = 3;  // 속도
-} 
+    this.speed = 1;  // 속도
+ 
+const directions = [-1, 1]; // 왼쪽.오른쪽 / 위,아래
+const dirX = directions[Math.floor(Math.random() * 2)];
+const dirY = directions[Math.floor(Math.random() * 2)];
+
+//방향 설정
+this.dx = dirX * this.speed;
+this.dy = dirY * this.speed;
+}
+
 
 // 아이템 생성할 때
 // 적 파괴 위치
 // 플레이어 파괴 위치
-// 아이템 생성 => 적 파괴시 or 플레이어 파괴시
 //export function createItem(x, y, type) {
 //    items.push(new Item(x, y, type));
 //}
 
 // 테스트용
-createItem(100, 100);
+createItem(100, 100, itemType.power);
+createItem(100, 100, itemType.boom);
+createItem(100, 100, itemType.boom);
 
-export function createItem(x, y, type = itemType.power) {
+export function createItem(x, y, type) {
     items.push(new Item(x, y, type));
 }
 
+function bounceRandom(item) {
+    const speed = Math.sqrt(item.dx ** 2 + item.dy ** 2);
+    const angle = Math.random() * 2 * Math.PI;
+    item.dx = Math.cos(angle) * speed;
+    item.dy = Math.sin(angle) * speed;
+}
 
 
 // 아이템 위치, 상태 업데이트 함수 >> 아이템 이동
@@ -52,9 +68,49 @@ export function update(canvas) {
     for (let i = 0; i < items.length; i++) {
         let item = items[i];
         // 아이템 이동
-        item.x += 1;
+        item.x += item.dx;
+        item.y += item.dy;
+        
+        if(item.x + item.width + item.dx > canvas.width - item.height || item.x + item.dx <0) {
+            //item.dx = - item.dx; //방향 반전
+            bounceRandom(item);
+    }
+        if(item.y + item.height + item.dy > canvas.height - item.height || item.y + item.dy <0) {
+            //item.dy = - item.dy;
+            bounceRandom(item);
+        
     }
 }
+}
+
+
+
+//function handleItemCollision(player, items) {
+//    for (let i = items.length - 1; i>=0; i--) {
+//        const item = items[i];
+//    
+//        if(checkCollision(item, player)) {
+//            items.splice(i, 1); //충돌 시 아이템 제거
+//            
+//            
+//        }
+//    }
+//}     
+//function checkCollision(item, player){
+//    return(
+//        item.x < player.x + player.width && 
+//        item.x + item.width > player.x &&
+//        item.y < player.y + player.height &&
+//        item.y + item.height > player.y
+//    );
+//}
+
+
+
+
+
+
+
 
 
 // 아이템 캔버스 그리기 함수
@@ -63,10 +119,10 @@ export function draw(ctx) {
         let item = items[i];
 
         if (item.type == itemType.power){
-            ctx.drawImage(img_poweritem, item.x, item.y, 50, 50);
+            ctx.drawImage(img_poweritem, item.x, item.y, 30, 35);
         }
         else {
-            ctx.drawImage(img_bombitem, item.x, item.y, 50, 50);
+            ctx.drawImage(img_bombitem, item.x, item.y, 40, 40);
         }
         
     }
@@ -89,32 +145,3 @@ export function draw(ctx) {
 //        } 
 //}
 
-// 아이템 이동. (맵 테두리에 부딪히면 튕겨나가게 - 충돌 방지) 
-function moveItem(item) {
-    item.updateCnt++;
-
-    switch (item.movePattern) {
-        case MovePattern.FORWARD:
-            item.y += item.speed;
-            break;
-            
-        case MovePattern.LEFT:
-            if (item.updateCnt < rangeRandom(40, 70)) {
-                item.y += item.speed;
-            }
-            else {
-                item.y += item.speed;
-                item.x -= 1;
-            }
-            break;
-        case MovePattern.RIGHT:
-            if (item.updateCnt < rangeRandom(40, 70)) {
-                item.y += item.speed;
-            }
-            else {
-                item.y += item.speed;
-                item.x += 1;
-            }
-            break;
-    }
-}
