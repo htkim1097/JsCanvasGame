@@ -68,13 +68,16 @@ function update() {
     // 오른쪽
     if (keys[39]) {
         player.x += player.speed;
-        if(player.x + player.width / 2 > canvas.width){ // 화면 경게 제한(구글링)
+        // 플레이어가 오른쪽 경계를 넘어가지 않도록 제한(구글링)
+        if(player.x + player.width / 2 > canvas.width){
+            // 오른쪽 경계 바로 안쪽으로 위치 고정
             player.x = canvas.width - player.width / 2;
         }
     }
     // 왼쪽
     if (keys[37]) {
         player.x -= player.speed;
+        // 왼쪽 경계 밖으로 나가지 않도록 제한
         if(player.x - player.width / 2 < 0){
             player.x = player.width / 2;
         }
@@ -82,6 +85,7 @@ function update() {
     // 위
     if (keys[38]) {
         player.y -= player.speed;
+        // 위쪽 경계 밖으로 나가지 않도록 제한
         if(player.y - player.height / 2 < 0) { 
             player.y = player.height / 2;
         }
@@ -89,6 +93,7 @@ function update() {
     // 아래
     if (keys[40]) {
         player.y += player.speed;
+        // 아래쪽 경계 밖으로 나가지 않도록 제한
         if(player.y + player.height / 2 > canvas.height){
             player.y = canvas.height - player.height / 2;
         }
@@ -199,22 +204,22 @@ function updateBombs() {
 }
 
 
-// ####### 충돌 처리 ##########
+// ####### 충돌 처리 ##########(구글링, gpt)
 let isGameOver = false; 
 
 function checkCollision(obj1, obj2){
     return(
-        obj1.x < obj2.x + obj2.width && 
-        obj1.x + obj1.width > obj2.x &&
-        obj1.y < obj2.y + obj2.height &&
-        obj1.y + obj1.height > obj2.y
+        obj1.x < obj2.x + obj2.width && // obj1 왼쪽이 obj2 오른쪽보다 왼쪽에 있고
+        obj1.x + obj1.width > obj2.x && // obj1 오른쪽이 obj2 왼쪽보다 오른쪽에 있고
+        obj1.y < obj2.y + obj2.height && // obj1 위쪽이 obj2 아래쪽보다 위에 있고
+        obj1.y + obj1.height > obj2.y // obj1 아래쪽이 obj2 위쪽보다 아래에 있으면 충돌
     );
 }
 
 function handleCollision() {
     bullets.forEach((bullet, bulletIndex) => {
         enemy.enemies.forEach((oneEnemy, enemyIndex) => {
-            // 총알과 적의 충돌 처리
+            // 플레이어 총알과 적의 충돌 처리
             if (checkCollision(bullet, oneEnemy)){
                 // 충돌시 적과 총알을 배열에서 제거
                 bullets.splice(bulletIndex, 1); // 총알 제거
@@ -223,20 +228,20 @@ function handleCollision() {
             }
         });
     });
-    
-    // bombs.forEach((bomb, bombIndex) => {
-    // enemy.enemies.forEach((oneEnemy, enemyIndex) => {
-    //     // 폭탄과 적의 충돌 처리
-    //     if (checkCollision(bomb, oneEnemy)){
-    //         // 충돌시 적과 폭탄을 배열에서 제거
-    //         bombs.splice(bombIndex, 1); // 총알 제거
-    //         enemy.enemies.splice(enemyIndex, 1); // 적 제거
-    //         }
-    //     });
-    // });
-    
+        
+    bombs.forEach((bomb, bombIndex) => {
+        enemy.enemies.forEach((oneEnemy, enemyIndex) => {
+            // 플레이어 폭탄과 적의 충돌 처리
+            if (checkCollision(bomb, oneEnemy)){
+                // 충돌시 적과 폭탄을 배열에서 제거
+                bombs.splice(bombIndex, 1); // 총알 제거
+                enemy.enemies.splice(enemyIndex, 1); // 적 제거
+            }
+        });
+    });
+
     enemy.enemies.forEach((oneEnemy) => {
-        // 적과 비행기의 충돌 처리
+        // 플레이어와 적 미사일 충돌 처리 // 적 미사일이 아니고 적 몸체랑 충돌시 체력감소됨
         if(checkCollision(oneEnemy, player) && !player.isInvincible){
             life -= 1;
             player.isInvincible = true; // 무적 상태 전환
