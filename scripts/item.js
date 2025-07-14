@@ -13,12 +13,6 @@ let img_bombitem = new Image();
 img_poweritem.src="../images/png/Image144.png";
 img_bombitem.src="../images/png/Image259.png";
 
-//아이템 타입 설정
-const itemType = { 
-    power : 'power',
-    bomb : 'bomb'
-};
-
 function Item(x, y, type) {
     this.x = x;
     this.y = y;
@@ -47,9 +41,9 @@ this.dy = dirY * this.speed;
 //}
 
 // 테스트용
-createItem(100, 100, itemType.power);
-createItem(100, 100, itemType.boom);
-createItem(100, 100, itemType.boom);
+createItem(100, 100, "power");
+createItem(100, 100, "bomb");
+createItem(100, 100, "bomb");
 
 export function createItem(x, y, type) {
     items.push(new Item(x, y, type));
@@ -95,7 +89,7 @@ export function draw(ctx) {
     for (let i = 0; i < items.length; i++) {
         let item = items[i];
 
-        if (item.type == itemType.power){
+        if (item.type == "power"){
             ctx.drawImage(img_poweritem, item.x, item.y, 30, 35);
         }
         else {
