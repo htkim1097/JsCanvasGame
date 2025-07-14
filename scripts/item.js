@@ -21,7 +21,7 @@ function Item(x, y, type) {
     this.type = type;  // 타입 설정
     this.interval = 2;  // 이미지 전환 간격
     this.updateCnt = 0;  // 업데이트 횟수
-    this.speed = 1;  // 속도
+    this.speed = 1.5;  // 속도
  
 const directions = [-1, 1]; // 왼쪽/오른쪽 , 위/아래
 const dirX = directions[Math.floor(Math.random() * 2)];
