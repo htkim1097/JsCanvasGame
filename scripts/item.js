@@ -3,7 +3,7 @@ const canvasWidth = 450;
 const canvasHeight = 600;
 
 // 아이템 객체 배열
-const items = [];
+export const items = [];
 // 폭발 이펙트 객체 -> 아이템 객체
 // 폭탄, 아이템 공통 객체를 만들고 객체 변수로 구분하기(power,boom)
 
@@ -12,12 +12,6 @@ let img_poweritem = new Image();
 let img_bombitem = new Image();
 img_poweritem.src="../images/png/Image144.png";
 img_bombitem.src="../images/png/Image259.png";
-
-//아이템 타입 설정
-const itemType = { 
-    power : 'power',
-    bomb : 'bomb'
-};
 
 function Item(x, y, type) {
     this.x = x;
@@ -29,7 +23,7 @@ function Item(x, y, type) {
     this.updateCnt = 0;  // 업데이트 횟수
     this.speed = 1;  // 속도
  
-const directions = [-1, 1]; // 왼쪽.오른쪽 / 위,아래
+const directions = [-1, 1]; // 왼쪽/오른쪽 , 위/아래
 const dirX = directions[Math.floor(Math.random() * 2)];
 const dirY = directions[Math.floor(Math.random() * 2)];
 
@@ -47,70 +41,37 @@ this.dy = dirY * this.speed;
 //}
 
 // 테스트용
-createItem(100, 100, itemType.power);
-createItem(100, 100, itemType.boom);
-createItem(100, 100, itemType.boom);
+createItem(100, 100, "power");
+createItem(100, 100, "bomb");
+createItem(100, 100, "bomb");
 
 export function createItem(x, y, type) {
     items.push(new Item(x, y, type));
 }
 
-function bounceRandom(item) {
-    const speed = Math.sqrt(item.dx ** 2 + item.dy ** 2);
-    const angle = Math.random() * 2 * Math.PI;
-    item.dx = Math.cos(angle) * speed;
-    item.dy = Math.sin(angle) * speed;
-}
 
 
-// 아이템 위치, 상태 업데이트 함수 >> 아이템 이동
+// 아이템 위치, 상태 업데이트 함수
 export function update(canvas) {
     for (let i = 0; i < items.length; i++) {
         let item = items[i];
-        // 아이템 이동
-        item.x += item.dx;
-        item.y += item.dy;
         
-        if(item.x + item.width + item.dx > canvas.width - item.height || item.x + item.dx <0) {
-            //item.dx = - item.dx; //방향 반전
-            bounceRandom(item);
+        // 아이템 위치를 속도만큼 이동
+        item.x += item.dx; //x좌표 이동
+        item.y += item.dy; //y좌표 이동
+        
+        //양 옆 벽 충돌 감지
+        if(item.x + item.width >= canvas.width || item.x < 0) {
+            item.x = Math.max(0, Math.min(canvas.width - item.width, item.x)); //화면 밖으로 나가지 않게 위치 보정
+            item.dx *= -1; //x 축 방향 반전(좌, 우)
     }
-        if(item.y + item.height + item.dy > canvas.height - item.height || item.y + item.dy <0) {
-            //item.dy = - item.dy;
-            bounceRandom(item);
-        
+        // 위아래 벽 충돌 감지
+        if(item.y + item.height >= canvas.height || item.y < 0) {
+            item.y = Math.max(0, Math.min(canvas.height - item.height, item.y));
+            item.dy *= -1; //y축 방향 반전(위, 아래)
     }
 }
 }
-
-
-
-//function handleItemCollision(player, items) {
-//    for (let i = items.length - 1; i>=0; i--) {
-//        const item = items[i];
-//    
-//        if(checkCollision(item, player)) {
-//            items.splice(i, 1); //충돌 시 아이템 제거
-//            
-//            
-//        }
-//    }
-//}     
-//function checkCollision(item, player){
-//    return(
-//        item.x < player.x + player.width && 
-//        item.x + item.width > player.x &&
-//        item.y < player.y + player.height &&
-//        item.y + item.height > player.y
-//    );
-//}
-
-
-
-
-
-
-
 
 
 // 아이템 캔버스 그리기 함수
@@ -118,7 +79,7 @@ export function draw(ctx) {
     for (let i = 0; i < items.length; i++) {
         let item = items[i];
 
-        if (item.type == itemType.power){
+        if (item.type == "power"){
             ctx.drawImage(img_poweritem, item.x, item.y, 30, 35);
         }
         else {
