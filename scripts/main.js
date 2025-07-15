@@ -4,9 +4,9 @@ import * as item from './item.js';
 
 // 캔버스 객체 생성
 //450 x 600
-let canvas = document.getElementById("myCanvas");
+const canvas = document.getElementById("myCanvas");
 // 캔버스 그리기 도구 불러오기
-let ctx = canvas.getContext("2d");
+const ctx = canvas.getContext("2d");
 
 // 플레이어 이미지 
 let img_player = new Image();
@@ -25,10 +25,12 @@ img_right.src = "../images/right.png";
 
 // 플레이어
 let player = {
+    width: 10,
+    height: 10,
+    imgWidth: 50,
+    imgHeight: 50,
     x: 210,
     y: 550,
-    width: 50,
-    height: 50,
     attack: 1, // 총알 갯수
     speed: 5,
     isInvincible: false, // 무적 상태
@@ -36,28 +38,30 @@ let player = {
     img: img_player
 };
 
-let delay = 200;
+let delay = 200; // 발사 딜레이
 let bulletTime = 0;
 let bombTime = 0;
-let life = 10;
+let life = 2;
 let bomb = 5;
 
-var keys = [];
-let effects = [];
-map.setMap(1);
+var keys = [];  // 입력된 키코드들을 담는 배열
+let effects = [];  // 효과 이미지 배열
 
-document.addEventListener("keydown", (e) => {
-    keys[e.keyCode] = true;
-    // console.log(e.keyCode);
-});
+function init() {
+    document.addEventListener("keydown", (e) => {
+        keys[e.keyCode] = true;
+        // console.log(e.keyCode);
+    });
 
-document.addEventListener("keyup", (e) => {
-    keys[e.keyCode] = false;
-});
+    document.addEventListener("keyup", (e) => {
+        keys[e.keyCode] = false;
+    });
 
-function update() {
-    map.update(canvas);
+    map.setMap(1);
+}
 
+// 사용자 입력에 대한 처리
+function processInputs() {
     // 오른쪽
     if (keys[39]) {
         player.x += player.speed;
@@ -117,9 +121,6 @@ function update() {
             bombTime = 0; // 발사후 시간 초기화
         }
     }
-
-    item.update(canvas);
-    enemy.update(canvas, [player.x, player.y]);
 }
 
 // ####### 총알 함수 ##########
@@ -141,42 +142,14 @@ function shootBullet() {
     }
 }
 
-// 총알 그리기 함수
-function drawBullets() {
-    if (player.attack == 1 && playerBullets.length >= 1) {
-        let b1 = playerBullets[0];
-        ctx.drawImage(img_bullet, b1.x, b1.y, b1.width, b1.height);
-    }
-    else if (player.attack == 3 && playerBullets.length >= 3) {
-        let b1 = playerBullets[0];
-        let b2 = playerBullets[1];
-        let b3 = playerBullets[2];
-        ctx.drawImage(img_bullet, b1.x, b1.y + 20, b1.width, b1.height);
-        ctx.drawImage(img_bullet, b2.x, b2.y, b2.width, b2.height);
-        ctx.drawImage(img_bullet, b3.x, b3.y + 20, b3.width, b3.height); 
-    }
-    else if (player.attack == 5 && playerBullets.length >= 5) {
-        let b1 = playerBullets[0];
-        let b2 = playerBullets[1];
-        let b3 = playerBullets[2];
-        let b4 = playerBullets[3];
-        let b5 = playerBullets[4];
-        ctx.drawImage(img_bullet, b1.x, b1.y + 40, b1.width, b1.height);
-        ctx.drawImage(img_bullet, b2.x, b2.y + 20, b2.width, b2.height);
-        ctx.drawImage(img_bullet, b3.x, b3.y, b3.width, b3.height); 
-        ctx.drawImage(img_bullet, b4.x, b4.y + 20, b4.width, b4.height);
-        ctx.drawImage(img_bullet, b5.x, b5.y + 40, b5.width, b5.height); 
-    }
-}
-
 // 총알 위치 업데이트 함수
 function updateBullets() {
     for (let i = playerBullets.length - 1; i >= 0; i--) {
         playerBullets[i].y -= playerBullets[i].speed;
         if (playerBullets[i].y < -50) {
             playerBullets.splice(i, 1); // 총알 제거
-        // if (playerBullets[i].y < -playerBullets[i].height){
-        //     playerBullets[i].y = -playerBullets[i].height;        
+            // if (playerBullets[i].y < -playerBullets[i].height){
+            //     playerBullets[i].y = -playerBullets[i].height;        
         }
     }
 }
@@ -185,12 +158,13 @@ function updateBullets() {
 let bombs = [];
 BombEffect.images = [];
 
-(function preBombImages() {
+function preBombImages() {
     for (let i = 0; i < 4; i++) {
         let img = new Image();
         img.src = `../images/PNG/Image${189 + i}.png`;
         BombEffect.images.push(img);
     }
+
     for (let i = 0; i < 7; i++) {
         for (let j = 1; j < 5; j++) {
             let img = new Image();
@@ -198,7 +172,7 @@ BombEffect.images = [];
             BombEffect.images.push(img);
         }
     }
-})();
+};
 
 function BombEffect(x, y) {
     this.x = x;
@@ -208,25 +182,6 @@ function BombEffect(x, y) {
     this.interval = 3;
     this.updateCnt = 0;
     this.imgArr = BombEffect.images;
-}
-
-// 이펙트 그리기
-function drawEffect() {
-    for (let i = effects.length - 1; i >= 0; i--) {
-        let eff = effects[i];
-        eff.updateCnt++;
-        let n = Math.floor(eff.updateCnt / eff.interval) - 1;
-        if (n < 0) n = 0;
-
-        if (eff.imgArr.length <= n) {
-            effects.splice(i, 1);
-            continue;
-        }
-
-        if (eff.updateCnt % eff.interval == 0) {
-            ctx.drawImage(eff.imgArr[n], eff.x, eff.y, eff.width, eff.height);
-        }
-    }
 }
 
 function shootBomb() {
@@ -244,15 +199,6 @@ function shootBomb() {
             explosionTimer: 0,
         };
         bombs.push(bombobj);
-    }
-}
-
-function drawBombs() {
-    for (let i = 0; i < bombs.length; i++) {
-        let bomb = bombs[i];
-        if (!bomb.exploded) { // 아직 터지지 않은 폭탄만 그리기
-            ctx.drawImage(img_bomb, bomb.x, bomb.y, bomb.width, bomb.height);
-        }
     }
 }
 
@@ -308,7 +254,6 @@ function checkCollision(obj1, obj2) {
 }
 
 function handleCollision() {
-
     // 플레이어 총알과 적 충돌 처리
     for (let i = playerBullets.length - 1; i >= 0; i--) {
         let bullet = playerBullets[i];
@@ -365,17 +310,22 @@ function handleCollision() {
             }, 200);
 
             if (life <= 0) {
-
                 item.items.push({
                     x: player.x - 15,
                     y: player.y - 15,
                     width: 30,
-                    height: 3,
+                    height: 30,
                     type: 'power'
+                });
+                item.items.push({
+                    x: player.x - 15,
+                    y: player.y - 30,
+                    width: 10,
+                    height: 30,
+                    type: 'bomb'
                 });
                 isGameOver = true;
             }
-
             enemy.bullets.splice(i, 1);
         }
     }
@@ -403,33 +353,65 @@ function addItem(item) {
     }
 }
 
+// ###### 업데이트 #######
+function update() {
+    map.update(canvas);
+    item.update(canvas);
+    enemy.update(canvas, [player.x, player.y]);
 
-function gameOver() {
-    ctx.drawImage(img_gameover, 0, 0, canvas.width, canvas.height);
+    updateBullets(); // 총알 위치 업데이트
+    updateBombs(); // 폭탄 위치 업데이트
 }
 
 // ####### 그리기 ##########
-function drawMap() {
-    map.draw(ctx);
-}
+function draw(){
+    map.draw(ctx);  // 맵 그리기
 
-function drawPlayer() {
-    ctx.drawImage(player.img, player.x - player.width / 2, player.y - player.height / 2, player.width, player.height);
-}
-
-function drawEtc() {
-    drawEffect();
+    if (player.isVisible) {
+        drawPlayer(); // 플레이어 그리기
+    }
     enemy.draw(ctx);
     item.draw(ctx);
+
+    drawEffect();
+    drawLife(); // life 그리기
+    drawBomb(); // bomb 그리기
+    drawBullets(); // 총알 그리기
+    handleCollision(); // 충돌 감지 및 처리
 }
 
-function drawAttack() {
-    update(); // 키보드 입력
-    drawBullets(); // 총알 그리기
-    updateBullets(); // 총알 위치 업데이트
-    drawBombs(); // 폭탄 그리기
-    updateBombs(); // 폭탄 위치 업데이트
-    handleCollision(); // 충돌 감지 및 처리
+// 플레이어 그리기
+function drawPlayer(){
+    ctx.drawImage(player.img, player.x - player.imgWidth / 2, player.y - player.imgHeight / 2, player.imgWidth, player.imgHeight);
+}
+
+// 이펙트 그리기
+function drawEffect() {
+    for (let i = effects.length - 1; i >= 0; i--) {
+        let eff = effects[i];
+        eff.updateCnt++;
+        let n = Math.floor(eff.updateCnt / eff.interval) - 1;
+        if (n < 0) n = 0;
+
+        if (eff.imgArr.length <= n) {
+            effects.splice(i, 1);
+            continue;
+        }
+
+        if (eff.updateCnt % eff.interval == 0) {
+            ctx.drawImage(eff.imgArr[n], eff.x, eff.y, eff.width, eff.height);
+        }
+    }
+}
+
+// 폭탄 그리기
+function drawBombs() {
+    for (let i = 0; i < bombs.length; i++) {
+        let bomb = bombs[i];
+        if (!bomb.exploded) { // 아직 터지지 않은 폭탄만 그리기
+            ctx.drawImage(img_bomb, bomb.x, bomb.y, bomb.width, bomb.height);
+        }
+    }
 }
 
 function drawLife() {
@@ -444,6 +426,45 @@ function drawBomb() {
     ctx.fillText('Bomb : ' + bomb, 10, 70);
 }
 
+// 총알 그리기 함수
+function drawBullets() {
+    if (player.attack == 1 && playerBullets.length >= 1) {
+        let b1 = playerBullets[0];
+        ctx.drawImage(img_bullet, b1.x, b1.y, b1.width, b1.height);
+    }
+    else if (player.attack == 3 && playerBullets.length >= 3) {
+        let b1 = playerBullets[0];
+        let b2 = playerBullets[1];
+        let b3 = playerBullets[2];
+        ctx.drawImage(img_bullet, b1.x, b1.y + 20, b1.width, b1.height);
+        ctx.drawImage(img_bullet, b2.x, b2.y, b2.width, b2.height);
+        ctx.drawImage(img_bullet, b3.x, b3.y + 20, b3.width, b3.height);
+    }
+    else if (player.attack == 5 && playerBullets.length >= 5) {
+        let b1 = playerBullets[0];
+        let b2 = playerBullets[1];
+        let b3 = playerBullets[2];
+        let b4 = playerBullets[3];
+        let b5 = playerBullets[4];
+        ctx.drawImage(img_bullet, b1.x, b1.y + 40, b1.width, b1.height);
+        ctx.drawImage(img_bullet, b2.x, b2.y + 20, b2.width, b2.height);
+        ctx.drawImage(img_bullet, b3.x, b3.y, b3.width, b3.height);
+        ctx.drawImage(img_bullet, b4.x, b4.y + 20, b4.width, b4.height);
+        ctx.drawImage(img_bullet, b5.x, b5.y + 40, b5.width, b5.height);
+    }
+}
+
+function gameOver() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = 'red';                // 글씨 색 빨간색으로 설정
+    ctx.font = '48px Arial';              // 글씨 크기와 폰트 지정
+    ctx.fillText('Game Over', canvas.width / 2 - 120, canvas.height / 2);  // 중앙 근처에 출력
+
+    ctx.fillStyle = 'red';                // 글씨 색 빨간색으로 설정
+    ctx.font = '24px Arial';              // 글씨 크기와 폰트 지정
+    ctx.fillText('Press F5 to restart', canvas.width / 2 - 100, canvas.height / 2 + 100);  // 중앙 근처에 출력
+}
+
 // ####### gameloop ##########
 function gameloop() {
     if (isGameOver) {
@@ -452,18 +473,14 @@ function gameloop() {
     }
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawMap(); // 맵 그리기
-    drawEtc(); // 적 & 아이템 그리기
 
-    if (player.isVisible) {
-        drawPlayer(); // 플레이어 그리기
-    }
-
-    drawAttack(); // 키보드, 총알, 폭탄, 충돌 처리
-    drawLife(); // life 그리기
-    drawBomb(); // bomb 그리기
+    processInputs();  // 키보드 입력
+    draw();  // 그리기
+    update();  
 
     requestAnimationFrame(gameloop);
 }
 
+// 게임 실행
+init();
 gameloop();
