@@ -85,7 +85,7 @@ export function draw(ctx) {
             ctx.drawImage(img_poweritem, item.x, item.y, 30, 35);
         }
         else {
-            ctx.drawImage(img_bombitem, item.x, item.y, 40, 40);
+            ctx.drawImage(img_bombitem, item.x, item.y, 40, 35);
         }
         
     }
