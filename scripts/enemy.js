@@ -47,7 +47,14 @@ function RedSmallPlane(x, pattern, isHoming) {
             if (this.isDestroyed) {
                 return;
             }
-            bullets.push(new RedBullet(this.gunX, this.y + this.height, isHoming));
+
+            if (isHoming) {
+                bullets.push(new RedBullet(this.gunX, this.y + this.height, playerPos[0], playerPos[1]));
+            }
+            else {
+                bullets.push(new RedBullet(this.gunX, this.y + this.height));
+            }
+
             await sleep(intervalMs);
         }
     }
@@ -188,51 +195,110 @@ function LargePlane(x, y, destX, destY) {
 function BossPlane(x, y) {
     this.x = x;
     this.y = y;
-    this.destXs = [100];
-    this.destYs = [100];
+    this.destXs = [0, 135];
+    this.destYs = [100, 100];
     this.width = 320;
     this.height = 160;
-    this.life = 200;
+    this.life = 250;
     this.speed = 1;
     this.updateCnt = 0;
     this.img = new Image(this.width, this.height);
     this.img.src = "../images/PNG/Image94.png";
     this.isDestroyed = false;
+    this.nextMove = 0;
+    this.lw = [];
+    this.rw = [];
+    this.tw = [];
 
-    this.fire = async (bullet, num, intervalMs) => {
+    this.changeNextMove = async () => {
+        while (!this.isDestroyed) {
+            await sleep(3200);
+            if (this.nextMove == 0) {
+                this.nextMove = 1;
+            }
+            else {
+                this.nextMove = 0;
+            }
+        }
+    }
+
+    this.fire = async () => {
+        // 출현할 때는 공격 안함.
         await sleep(2500);
-        if (bullet == BulletType.RED) {
-            for (let i = 0; i < num; i++) {
+
+        // 발사 각
+        let startAng = 60;
+
+        while (true) {
+            // 공격 패턴 A 
+            // 하단 호 모양으로 5x3연발 공격
+            for (let j = 0; j < 3; j++) {
                 if (this.isDestroyed) {
                     return;
                 }
-
-                let startAng = 60;
-                for (let j = 0; j < 5; j++) {
-                    bullets.push(new RedBullet(this.x + 10, this.y + 35, this.x + 10 + 100 * Math.cos(degToRad(startAng + (15 * j))), this.y + 35 + 100 * Math.sin(degToRad(startAng + (15 * j)))));
+                for (let i = 0; i < 5; i++) {
+                    this.updateXY();
+                    let destX = this.x + 1000 * Math.cos(degToRad(startAng + (15 * i)));
+                    let destY = this.y + 1000 * Math.sin(degToRad(startAng + (15 * i)));
+                    bullets.push(new RedBullet(this.tw[0], this.tw[1], destX + 150, destY));
                 }
-
-                for (let j = 0; j < 5; j++) {
-                    bullets.push(new RedBullet(this.x + 100, this.y + 35, this.x + 100 + 100 * Math.cos(degToRad(startAng + (15 * j))), this.y + 35 + 100 * Math.sin(degToRad(startAng + (15 * j)))));
-                }
-
-
-                await sleep(intervalMs);
+                await sleep(200);
             }
-        }
-        else {
-            for (let i = 0; i < num; i++) {
+
+            await sleep(1000);
+
+            // 공격 패턴 B
+            // 랜덤으로 탄을 난사하는 공격
+            for (let i = 0; i < 10; i++) {
+                this.updateXY();
+                bullets.push(new BlueBullet(this.rw[0], this.rw[1], rangeRandom(0, canvasWidth), rangeRandom(0, canvasHeight)));
+                bullets.push(new BlueBullet(this.lw[0], this.lw[1], rangeRandom(0, canvasWidth), rangeRandom(0, canvasHeight)));
+                bullets.push(new BlueBullet(this.rw[0], this.rw[1], rangeRandom(0, canvasWidth), rangeRandom(0, canvasHeight)));
+                bullets.push(new BlueBullet(this.lw[0], this.lw[1], rangeRandom(0, canvasWidth), rangeRandom(0, canvasHeight)));
+                await sleep(300);
+            }
+
+            await sleep(1000);
+
+            // 공격 패턴 C
+            // 유도 공격
+            for (let j = 0; j < 3; j++) {
                 if (this.isDestroyed) {
                     return;
                 }
-                bullets.push(new BlueBullet(this.x + 57, this.y + 70, playerPos[0], playerPos[1]));
-                await sleep(50);
-                bullets.push(new BlueBullet(this.x + 56, this.y + 70, playerPos[0], playerPos[1]));
-                await sleep(50);
-                bullets.push(new BlueBullet(this.x + 57, this.y + 70, playerPos[0], playerPos[1]));
-                await sleep(intervalMs);
+                for (let i = 0; i < 3; i++) {
+                    this.updateXY();
+                    bullets.push(new BlueBullet(this.lw[0], this.lw[1], playerPos[0], playerPos[1]));
+                    bullets.push(new BlueBullet(this.rw[0], this.rw[1], playerPos[0], playerPos[1]));
+                    await sleep(50);
+                }
+                await sleep(600);
             }
+
+            await sleep(1000);
+
+            // 공격 패턴 D
+            // 나선 공격
+
+
+
+            // bullets.push(new BlueBullet(this.x + 57, this.y + 70));
+            // await sleep(50);
+            // bullets.push(new BlueBullet(this.x + 56, this.y + 70));
+            // await sleep(50);
+            // bullets.push(new BlueBullet(this.x + 57, this.y + 70));
         }
+    }
+
+    this.updateXY = () => {
+        // 발사 위치
+        this.lw = [this.x + this.width / 3, this.y + 68];  // 왼쪽 날개
+        this.rw = [this.x + this.width / 3 + 100, this.y + 68];  // 오른쪽 날개
+        this.tw = [this.x + this.width / 2 - 10, this.y + this.height];  // 꼬리 날개
+    }
+
+    // Phase 2 공격
+    this.fire2 = async () => {
 
     }
 }
@@ -488,26 +554,19 @@ function moveEnemy(enemy) {
             enemy.y += enemy.speed;
         }
         else if (enemy.updateCnt > 300) {
-            if (enemy.updateCnt < 500) {
-                enemy.destX = 10;
-                enemy.destY = 80;
-            }
-            else if (enemy.updateCnt < 800){
-                enemy.destX = 130;
-                enemy.destY = 130;
-            }
-
-            let dx = enemy.destX - enemy.x;
-            let dy = enemy.destY - enemy.y;
+            let destX = enemy.destXs[enemy.nextMove];
+            let destY = enemy.destYs[enemy.nextMove];
+            let dx = destX - enemy.x;
+            let dy = destY - enemy.y;
             let len = Math.sqrt(dx * dx + dy * dy);
             let vx = dx / len;
             let vy = dy / len;
 
-            if (enemy.destX - 10 > enemy.x || enemy.x > enemy.destX + 10) {
+            if (destX - 10 > enemy.x || enemy.x > destX + 10) {
                 enemy.x += vx * enemy.speed;
             }
 
-            if (enemy.y < enemy.destY - 10 || enemy.destY + 10 < enemy.y) {
+            if (enemy.y < destY - 10 || destY + 10 < enemy.y) {
                 enemy.y += vy * enemy.speed;
             }
         }
@@ -521,7 +580,7 @@ async function addRedSmallPlane(planeNum, intervalMs, isHoming, x = -1, pattern 
 
             for (let i = 1; i <= planeNum; i++) {
                 let enemy = new RedSmallPlane(x == -1 ? posX : x, pattern, isHoming);
-                enemy.fire(2, 3000);
+                enemy.fire(3, 3000);
                 enemies.push(enemy);
                 await sleep(intervalMs);
             }
@@ -586,8 +645,8 @@ async function addLargePlane(planeNum, intervalMs, x, y, destX, destY) {
 
 async function addBoss() {
     let enemy = new BossPlane(canvasWidth / 2 - 160, -160);
-    // enemy.fire(BulletType.BLUE, 100, 2000);
-    // enemy.fire(BulletType.RED, 500, 3000);
+    enemy.changeNextMove();
+    enemy.fire();
     enemies.push(enemy);
 }
 
@@ -632,9 +691,10 @@ function createEnemy() {
     switch (frameCnt) {
         case 100:
             addBoss();
-            // addLargePlane(1, 0, 0, -100, 80, 100);
+            addRedSmallPlane(4, 300, true, canvasWidth / 5 * 1, RedSmallPattern.VERTICAL);
+            //addLargePlane(1, 0, 0, -100, 80, 300);
             // addRedSmallPlane(5, 200);
-            // addBlueSmallPlane(10, 200, true, -1, BlueSmallPattern.RIGHT);
+            //addBlueSmallPlane(10, 200, true, -1, BlueSmallPattern.RIGHT);
             // addMiddlePlane(3, 300, 150, -50, 100, 100, true);
             // addMiddlePlane(3, 300, 350, -50, 300, 100, true);
             break;
