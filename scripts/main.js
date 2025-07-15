@@ -15,7 +15,6 @@ let img_bomb = new Image();
 let img_gameover = new Image();
 let img_left = new Image();
 let img_right = new Image();
-let img_die = new Image();
 img_player.src = "../images/png/Image45.png";
 img_bullet.src = "../images/bullet.png";
 img_bomb.src = "../images/bomb.png";
@@ -41,7 +40,7 @@ let player = {
 let delay = 200; // 발사 딜레이
 let bulletTime = 0;
 let bombTime = 0;
-let life = 2;
+let life = 3;
 let bomb = 5;
 
 var keys = [];  // 입력된 키코드들을 담는 배열
@@ -132,7 +131,7 @@ function shootBullet() {
     let totalWidth = (player.attack - 1) * space;
     for (let i = 0; i < player.attack; i++) {
         let bullet = {
-            x: player.x + player.width / 2 - 46 - totalWidth / 2 + i * space,// 비행기 중앙에서 발사
+            x: player.x + player.width / 2 - 26 - totalWidth / 2 + i * space,// 비행기 중앙에서 발사
             y: player.y - 100, // 비행기 조정석 위치에서 발사
             width: 40, // 총알 너비
             height: 80, // 총알 높이
@@ -156,23 +155,6 @@ function updateBullets() {
 
 // ####### 폭탄 함수 ##########(오류수정 gpt)
 let bombs = [];
-BombEffect.images = [];
-
-function preBombImages() {
-    for (let i = 0; i < 4; i++) {
-        let img = new Image();
-        img.src = `../images/PNG/Image${189 + i}.png`;
-        BombEffect.images.push(img);
-    }
-
-    for (let i = 0; i < 7; i++) {
-        for (let j = 1; j < 5; j++) {
-            let img = new Image();
-            img.src = `../images/PNG/Image193_${j}.png`;
-            BombEffect.images.push(img);
-        }
-    }
-};
 
 function BombEffect(x, y) {
     this.x = x;
@@ -181,7 +163,21 @@ function BombEffect(x, y) {
     this.height = 350;
     this.interval = 3;
     this.updateCnt = 0;
-    this.imgArr = BombEffect.images;
+    this.imgArr = [];
+
+    for (let i = 0; i < 4; i++) {
+        let img = new Image();
+        img.src = `../images/PNG/Image189_${i+1}.png`;
+        this.imgArr.push(img);
+    }
+
+    for (let i = 0; i < 5; i++) {
+        for (let j = 5; j < 9; j++) {
+            let img = new Image();
+            img.src = `../images/PNG/Image189_${j}.png`;
+            this.imgArr.push(img);
+        }
+    }
 }
 
 function shootBomb() {
@@ -373,10 +369,12 @@ function draw(){
     enemy.draw(ctx);
     item.draw(ctx);
 
-    drawEffect();
     drawLife(); // life 그리기
-    drawBomb(); // bomb 그리기
+    drawBombCount();
     drawBullets(); // 총알 그리기
+    drawEffect();
+    drawBombs(); // bomb 그리기
+
     handleCollision(); // 충돌 감지 및 처리
 }
 
@@ -399,6 +397,7 @@ function drawEffect() {
         }
 
         if (eff.updateCnt % eff.interval == 0) {
+            console.log(eff.imgArr)
             ctx.drawImage(eff.imgArr[n], eff.x, eff.y, eff.width, eff.height);
         }
     }
@@ -420,7 +419,7 @@ function drawLife() {
     ctx.fillText('life : ' + life, 10, 40);
 }
 
-function drawBomb() {
+function drawBombCount() {
     ctx.fillStyle = 'red';
     ctx.font = '20px Arial';
     ctx.fillText('Bomb : ' + bomb, 10, 70);
