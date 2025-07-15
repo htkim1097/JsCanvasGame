@@ -5,7 +5,6 @@ const canvasHeight = 600;
 // 아이템 객체 배열
 export const items = [];
 // 폭발 이펙트 객체 -> 아이템 객체
-// 폭탄, 아이템 공통 객체를 만들고 객체 변수로 구분하기(power,boom)
 
 let img_poweritem = new Image();
 let img_bombitem = new Image();
@@ -69,7 +68,6 @@ export function update(canvas) {
 }
 }
 
-
 // 아이템 캔버스 그리기 함수
 export function draw(ctx) {
     for (let i = 0; i < items.length; i++) {
@@ -84,23 +82,7 @@ export function draw(ctx) {
         
     }
 }
-//    // 아이템 그리기
-//    for (let i = 0; i < items.length; i++) {
-//        let item = items[i];
-//
-//        if (item.img.src != undefined) {
-//            let path ="../images/png/Image144.png";
-//            let img = new Image();
-//            img.src = path;
-//            
-//            ctx.drawImage(item.img, item.x, item.y, item.width, item.height);
-//        }
-//        // 이미지 파일이 없으면 아이템을 박스로 그리기
-//        else {
-//            ctx.fillStyle = 'green';
-//            ctx.fillRect(item.x, item.y, item.width, item.height);
-//        } 
-//}
+
 
 // 최소, 최대 값 사이의 정수를 랜덤 반환한다
 function rangeRandom(min, max) {
