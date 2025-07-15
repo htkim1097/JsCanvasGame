@@ -7,7 +7,6 @@ export const items = [];
 // 폭발 이펙트 객체 -> 아이템 객체
 // 폭탄, 아이템 공통 객체를 만들고 객체 변수로 구분하기(power,boom)
 
-
 let img_poweritem = new Image();
 let img_bombitem = new Image();
 img_poweritem.src="../images/png/Image144.png";
@@ -32,7 +31,6 @@ this.dx = dirX * this.speed;
 this.dy = dirY * this.speed;
 }
 
-
 // 아이템 생성할 때
 // 적 파괴 위치
 // 플레이어 파괴 위치
@@ -41,17 +39,13 @@ this.dy = dirY * this.speed;
 //}
 
 // 테스트용
-createItem(100, 100, "power");
-createItem(100, 100, "power");
-createItem(100, 100, "power");
-createItem(100, 100, "bomb");
-createItem(100, 100, "bomb");
+createItem(rangeRandom(0, 300), rangeRandom(0, 300), "power");
+createItem(rangeRandom(0, 300), rangeRandom(0, 300), "power");
+createItem(rangeRandom(0, 300), rangeRandom(0, 300), "bomb");
 
 export function createItem(x, y, type) {
     items.push(new Item(x, y, type));
 }
-
-
 
 // 아이템 위치, 상태 업데이트 함수
 export function update(canvas) {
@@ -108,3 +102,7 @@ export function draw(ctx) {
 //        } 
 //}
 
+// 최소, 최대 값 사이의 정수를 랜덤 반환한다
+function rangeRandom(min, max) {
+    return Math.floor((Math.random() * (max - min)) + min);
+}

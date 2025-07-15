@@ -6,8 +6,8 @@ const redBulletSize = 17;
 const blueBulletSize = 15;
 
 let playerPos = [];
-
 let frameCnt = 0;
+export let isGameOver = false;
 
 export const enemies = new Array();  // 적 비행기 객체 배열
 export const bullets = new Array();  // 탄 객체 배열
@@ -109,9 +109,9 @@ function MiddlePlane(x, y, destX, destY, isHoming) {
     this.y = y;
     this.destX = destX;
     this.destY = destY;
-    this.width = 60;
-    this.height = 60;
-    this.life = 8;
+    this.width = 70;
+    this.height = 70;
+    this.life = 12;
     this.speed = 3;
     this.updateCnt = 0;
     this.img = new Image();
@@ -146,7 +146,7 @@ function LargePlane(x, y, destX, destY) {
     this.destY = destY;
     this.width = 130;
     this.height = 95;
-    this.life = 25;
+    this.life = 45;
     this.speed = 2;
     this.updateCnt = 0;
     this.img = new Image(this.width, this.height);
@@ -293,36 +293,29 @@ function BossPlane(x, y) {
     }
 
     this.onDestroyed = async () => {
-        await sleep(3000);
+        await sleep(1000);
 
-        effects.push(new RealBossFirstAnim(this.x + 50, this.y, 200, 120)); 
+        effects.push(new RealBossFirstAnim(this.x + 50, this.y, 200, 120));
 
-        await sleep(3000);
+        await sleep(1200);
 
-        let enemy = new RealBossPlane(this.x, this.y);
+        let enemy = new RealBossPlane(this.x + 50, this.y);
         enemy.changeNextMove();
         enemy.fire();
         enemies.push(enemy);
     }
 }
 
-const RealBossState = {
-    first: 0,
-    idle: 1,
-    attack: 2,
-    bigAttack: 3,
-}
-
 // 보스 Phase 2
 function RealBossPlane(x, y) {
     this.x = x;
     this.y = y;
-    this.destXs = [0, 135];
-    this.destYs = [100, 100];
+    this.destXs = [0, 300, 200, 120, 150, 150, 10, 70, 210];
+    this.destYs = [100, 180, 30, 100, 20, 250, 200, 40, 60];
     this.width = 200;
     this.height = 120;
     this.life = 300;
-    this.speed = 3;
+    this.speed = 4;
     this.updateCnt = 0;
     this.isDestroyed = false;
     this.nextMove = 0;
@@ -334,13 +327,11 @@ function RealBossPlane(x, y) {
 
     this.changeNextMove = async () => {
         while (!this.isDestroyed) {
-            await sleep(3200);
-            if (this.nextMove == 0) {
-                this.nextMove = 1;
-            }
-            else {
+            await sleep(2000);
+            if (this.nextMove >= this.destXs.length) {
                 this.nextMove = 0;
             }
+            this.nextMove++;
         }
     }
 
@@ -350,6 +341,10 @@ function RealBossPlane(x, y) {
 
         // 발사 각
         let startAng = 60;
+
+
+        // todo
+        // 2페이즈 공격 패턴 짜기
 
         while (true) {
             // 공격 패턴 A 
@@ -362,6 +357,8 @@ function RealBossPlane(x, y) {
                     bullets.push(new RedBullet(this.tw[0], this.tw[1], destX + 150, destY));
                 }
                 if (this.isDestroyed) {
+                    await sleep(3000);
+                    isGameOver = true;
                     return;
                 }
                 await sleep(200);
@@ -379,6 +376,8 @@ function RealBossPlane(x, y) {
                 bullets.push(new BlueBullet(this.lw[0], this.lw[1], rangeRandom(0, canvasWidth), rangeRandom(0, canvasHeight)));
 
                 if (this.isDestroyed) {
+                    await sleep(3000);
+                    isGameOver = true;
                     return;
                 }
                 await sleep(250);
@@ -396,6 +395,8 @@ function RealBossPlane(x, y) {
                     await sleep(50);
                 }
                 if (this.isDestroyed) {
+                    await sleep(3000);
+                    isGameOver = true;
                     return;
                 }
                 await sleep(300);
@@ -407,8 +408,8 @@ function RealBossPlane(x, y) {
 
     this.updateXY = () => {
         // 발사 위치
-        this.lw = [this.x + this.width / 3, this.y + 68];  // 왼쪽 날개
-        this.rw = [this.x + this.width / 3 + 100, this.y + 68];  // 오른쪽 날개
+        this.lw = [this.x + this.width / 3 - 25, this.y + 68];  // 왼쪽 날개
+        this.rw = [this.x + this.width / 3 + 75, this.y + 68];  // 오른쪽 날개
         this.tw = [this.x + this.width / 2 - 10, this.y + this.height];  // 꼬리 날개
     }
 }
@@ -686,7 +687,7 @@ function moveEnemy(enemy) {
             }
         }
     }
-    else if (enemy instanceof BossPlane || enemy instanceof RealBossPlane) {
+    else if (enemy instanceof BossPlane) {
         if (enemy.updateCnt < 200) {
             enemy.y += enemy.speed;
         }
@@ -706,6 +707,23 @@ function moveEnemy(enemy) {
             if (enemy.y < destY - 10 || destY + 10 < enemy.y) {
                 enemy.y += vy * enemy.speed;
             }
+        }
+    }
+    else if (enemy instanceof RealBossPlane) {
+        let destX = enemy.destXs[enemy.nextMove];
+        let destY = enemy.destYs[enemy.nextMove];
+        let dx = destX - enemy.x;
+        let dy = destY - enemy.y;
+        let len = Math.sqrt(dx * dx + dy * dy);
+        let vx = dx / len;
+        let vy = dy / len;
+
+        if (destX - 10 > enemy.x || enemy.x > destX + 10) {
+            enemy.x += vx * enemy.speed;
+        }
+
+        if (enemy.y < destY - 10 || destY + 10 < enemy.y) {
+            enemy.y += vy * enemy.speed;
         }
     }
 }
@@ -789,23 +807,45 @@ function addBoss() {
 
 export function damaged(enemy, damage) {
     enemy.life -= damage;
+
+    // x, y, power, bomb
+    let itemArr = [];
+    if (enemy instanceof MiddlePlane) {
+        itemArr = [enemy.x, enemy.y, rangeRandom(-4, 2), rangeRandom(-3, 2)]
+    }
+    else if (enemy instanceof LargePlane) {
+        itemArr = [enemy.x, enemy.y, 1, rangeRandom(0, 2)]
+    }
+    else if (enemy instanceof BossPlane) {
+        itemArr = [enemy.x, enemy.y, 2, 2]
+    }
+
+    // 체력이 0 이하일 때
+    if (checkLife(enemy)) {
+        return itemArr;
+    }
 }
 
 // 적 객체 제거
 function checkDelCondition(enemy, canvas) {
-    // 체력이 0 이하일 때
-    if (enemy.life <= 0) {
-        // 현재 위치에 폭발 이펙트 생성
-        effects.push(new ExplosionAnim(enemy.x, enemy.y, enemy.width, enemy.height));
-        enemy.isDestroyed = true;
-        enemies.splice(enemies.indexOf(enemy), 1);
-    }
+    checkLife(enemy);
 
     // 캔버스 바깥으로 넘어가면
     if (enemy.y < -180 || enemy.y > canvas.height + 180 || enemy.x < -180 || enemy.x > canvas.width + 180) {
         enemy.isDestroyed = true;
         enemies.splice(enemies.indexOf(enemy), 1);
     }
+}
+
+function checkLife(enemy) {
+    if (enemy.life <= 0) {
+        // 현재 위치에 폭발 이펙트 생성
+        effects.push(new ExplosionAnim(enemy.x, enemy.y, enemy.width, enemy.height));
+        enemy.isDestroyed = true;
+        enemies.splice(enemies.indexOf(enemy), 1);
+        return true;
+    }
+    return false;
 }
 
 // 비동기 지연
@@ -827,140 +867,132 @@ function degToRad(deg) {
 function createEnemy() {
     switch (frameCnt) {
         case 100:
-            addBoss();
-            //addRedSmallPlane(4, 300, true, canvasWidth / 5 * 1, RedSmallPattern.VERTICAL);
-            //addLargePlane(1, 0, 0, -100, 80, 300);
-            // addRedSmallPlane(5, 200);
-            //addBlueSmallPlane(10, 200, true, -1, BlueSmallPattern.RIGHT);
-            // addMiddlePlane(3, 300, 150, -50, 100, 100, true);
-            // addMiddlePlane(3, 300, 350, -50, 300, 100, true);
+            // addBoss();
+
+            addRedSmallPlane(5, 200);
             break;
         case 200:
-            //addBlueSmallPlane(3, 200, true, 100, BlueSmallPattern.RIGHT);
+            addBlueSmallPlane(3, 200, true, 100, BlueSmallPattern.RIGHT);
             break;
         case 300:
-            //addBlueSmallPlane(3, 200, true, 300, BlueSmallPattern.LEFT);
+            addBlueSmallPlane(3, 200, true, 300, BlueSmallPattern.LEFT);
             break;
         case 350:
-            //addRedSmallPlane(3, 0);
+            addRedSmallPlane(3, 0);
+            addMiddlePlane(3, 300, 150, -50, 100, 100, true);
             break;
-        // case 500:
-        //     addRedSmallPlane(4, 300, true, canvasWidth / 5 * 1, RedSmallPattern.VERTICAL);
-        //     break;
-        // case 700:
-        //     addRedSmallPlane(4, 300, true, canvasWidth / 5 * 3, RedSmallPattern.VERTICAL);
-        //     break;
-        // case 900:
-        //     addBlueSmallPlane(3, 200, true, -1, BlueSmallPattern.LEFT);
-        //     break;
-        // case 1100:
-        //     addBlueSmallPlane(5, 200, true);
-        //     break;
-        // case 1200:
-        //     addRedSmallPlane(4, 300, true);
-        //     addBlueSmallPlane(3, 200, true, -1, BlueSmallPattern.RIGHT);
-        //     break;
-        // case 1400:
-        //     addBlueSmallPlane(3, 200, true);
-        //     break;
-        // case 1600:
-        //     addRedSmallPlane(4, 300, true, canvasWidth / 5 * 3, RedSmallPattern.VERTICAL);
-        //     break;
-        // case 1800:
-        //     break;
-        // case 2000:
-        //     addBlueSmallPlane(10, 200, true);
-        //     break;
-        // case 2100:
-        //     addRedSmallPlane(4, 300, true, canvasWidth / 5 * 3, RedSmallPattern.VERTICAL);
-        //     break;
-        // case 2300:
-        //     break;
-        // case 2500:
-        //     addRedSmallPlane(5, 200);
-        //     break;
-        // case 2700:
-        //     break;
-        // case 2900:
-        //     addRedSmallPlane(4, 300, true, canvasWidth / 5 * 3, RedSmallPattern.VERTICAL);
-        //     break;
-        // case 3100:
-        //     addRedSmallPlane(5, 200);
-        //     break;
-        // case 3300:
-        //     addBlueSmallPlane(8, 200, true);
-        //     break;
-        // case 3400:
-        //     addRedSmallPlane(4, 300, true, canvasWidth / 5 * 1, RedSmallPattern.VERTICAL);
-        //     break;
-        // case 3600:
-        //     break;
-        // case 3800:
-        //     addRedSmallPlane(4, 300, true, canvasWidth / 5 * 1, RedSmallPattern.VERTICAL);
-        //     break;
-        // case 3900:
-        //     addRedSmallPlane(4, 300, true, canvasWidth / 5 * 3, RedSmallPattern.VERTICAL);
-        //     break;
-        // case 4100:
-        //     addBlueSmallPlane(4, 200, true);
-        //     break;
-        // case 4300:
-        //     addBlueSmallPlane(3, 200, true);
-        //     break;
-        // case 4500:
-        //     addRedSmallPlane(4, 200);
-        //     break;
-        // case 4700:
-        //     break;
-        // case 4800:
-        //     addBlueSmallPlane(3, 200, true);
-        //     break;
-        // case 5000:
-        //     addRedSmallPlane(7, 200);
-        //     break;
-        // case 5200:
-        //     addBlueSmallPlane(12, 400, true);
-        //     break;
-        // case 5400:
-        //     break;
-        // case 5600:
-        //     addRedSmallPlane(5, 200);
-        //     break;
-        // case 5800:
-        //     break;
-        // case 6000:
-        //     break;
-        // case 6300:
-        //     break;
-        // case 6500:
-        //     addBlueSmallPlane(3, 200, true);
-        //     break;
-        // case 6700:
-        //     addRedSmallPlane(4, 300, true, canvasWidth / 5 * 1, RedSmallPattern.VERTICAL);
-        //     break;
-        // case 6900:
-        //     addRedSmallPlane(4, 300, true, canvasWidth / 5 * 3, RedSmallPattern.VERTICAL);
-        //     break;
-        // case 7100:
-        //     break;
-        // case 7300:
-        //     addRedSmallPlane(3, 200);
-        //     break;
-        // case 7500:
-        //     addBlueSmallPlane(3, 200, true);
-        //     break;
-        // case 7700:
-        //     break;
-        // case 7900:
-        //     addRedSmallPlane(5, 200);
-        //     break;
-        // case 8100:
-        //     addBlueSmallPlane(8, 200, true);
-        //     break;
-        // case 8200:
-        //     break;
-        // case 8300:
-        // addBoss();
-        //     break;
+        case 500:
+            addRedSmallPlane(4, 300, true, canvasWidth / 5 * 1, RedSmallPattern.VERTICAL);
+            break;
+        case 700:
+            addRedSmallPlane(4, 300, true, canvasWidth / 5 * 3, RedSmallPattern.VERTICAL);
+            break;
+        case 900:
+            addBlueSmallPlane(3, 200, true, -1, BlueSmallPattern.LEFT);
+            addMiddlePlane(3, 300, 350, -50, 300, 100, true);
+            break;
+        case 1100:
+            addBlueSmallPlane(5, 200, true);
+            break;
+        case 1200:
+            addRedSmallPlane(4, 300, true);
+            addBlueSmallPlane(3, 200, true, -1, BlueSmallPattern.RIGHT);
+            break;
+        case 1400:
+            addBlueSmallPlane(3, 200, true);
+            addLargePlane(1, 0, 0, -100, 80, 300);
+            break;
+        case 1600:
+            addRedSmallPlane(4, 300, true, canvasWidth / 5 * 3, RedSmallPattern.VERTICAL);
+            break;
+        case 1800:
+            addBlueSmallPlane(4, 200, true, -1, BlueSmallPattern.RIGHT);
+            addBlueSmallPlane(4, 200, true, -1, BlueSmallPattern.LEFT);
+            break;
+        case 2000:
+            addBlueSmallPlane(10, 200, true);
+            addLargePlane(1, 0, 0, -100, 80, 300);
+            break;
+        case 2100:
+            addRedSmallPlane(4, 300, true, canvasWidth / 5 * 3, RedSmallPattern.VERTICAL);
+            break;
+        case 2300:
+            break;
+        case 2500:
+            addRedSmallPlane(5, 200);
+            break;
+        case 2700:
+            break;
+        case 2900:
+            addRedSmallPlane(4, 300, true, canvasWidth / 5 * 3, RedSmallPattern.VERTICAL);
+            break;
+        case 3100:
+            addRedSmallPlane(5, 200);
+            addLargePlane(1, 0, 0, -100, 80, 300);
+            break;
+        case 3300:
+            addBlueSmallPlane(8, 200, true);
+            break;
+        case 3400:
+            addRedSmallPlane(4, 300, true, canvasWidth / 5 * 1, RedSmallPattern.VERTICAL);
+            break;
+        case 3600:
+            addLargePlane(1, 0, 0, -100, 80, 300);
+            break;
+        case 3800:
+            addRedSmallPlane(4, 300, true, canvasWidth / 5 * 1, RedSmallPattern.VERTICAL);
+            break;
+        case 3900:
+            addRedSmallPlane(4, 300, true, canvasWidth / 5 * 3, RedSmallPattern.VERTICAL);
+            break;
+        case 4100:
+            addBlueSmallPlane(4, 200, true);
+            break;
+        case 4300:
+            addBlueSmallPlane(3, 200, true);
+            break;
+        case 4500:
+            addRedSmallPlane(4, 200);
+            break;
+        case 4700:
+            break;
+        case 4800:
+            addBlueSmallPlane(3, 200, true);
+            break;
+        case 5000:
+            addRedSmallPlane(7, 200);
+            break;
+        case 5200:
+            addBlueSmallPlane(12, 400, true);
+            break;
+        case 5400:
+            break;
+        case 5600:
+            addRedSmallPlane(5, 200);
+            break;
+        case 5800:
+            addLargePlane(1, 0, 0, -100, 80, 300);
+            break;
+        case 6000:
+            break;
+        case 6300:
+            break;
+        case 6500:
+            addBlueSmallPlane(3, 200, true);
+            break;
+        case 6700:
+            addRedSmallPlane(4, 300, true, canvasWidth / 5 * 1, RedSmallPattern.VERTICAL);
+            break;
+        case 6900:
+            addRedSmallPlane(4, 300, true, canvasWidth / 5 * 3, RedSmallPattern.VERTICAL);
+            break;
+        case 7100:
+            break;
+        case 7300:
+            addRedSmallPlane(3, 200);
+            break;
+        case 7500:
+            addBoss();
+            break;
     }
 }

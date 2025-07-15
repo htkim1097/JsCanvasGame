@@ -4,9 +4,9 @@ import * as item from './item.js';
 
 // 캔버스 객체 생성
 //450 x 600
-let canvas = document.getElementById("myCanvas"); 
+let canvas = document.getElementById("myCanvas");
 
-let ctx = canvas.getContext("2d"); 
+let ctx = canvas.getContext("2d");
 
 // 플레이어 이미지 
 let img_player = new Image();
@@ -29,8 +29,6 @@ let player = {
     imgHeight: 50,
     x: 210,
     y: 550,
-    width: 50,
-    height: 50,
     attack: 1, // 총알 갯수
     speed: 5,
     isInvincible: false, // 무적 상태
@@ -42,7 +40,7 @@ let delay = 200; // 발사 딜레이
 let bulletTime = 0;
 let bombTime = 0;
 let life = 3;
-let bomb = 5; 
+let bomb = 5;
 
 var keys = [];
 let effects = [];
@@ -66,9 +64,9 @@ function update() {
         player.x += player.speed;
         player.img = img_right;
         // 플레이어가 오른쪽 경계를 넘어가지 않도록 제한
-        if(player.x + player.width / 2 > canvas.width){
+        if (player.x + player.imgWidth / 2 > canvas.width) {
             // 오른쪽 경계 바로 안쪽으로 위치 고정
-            player.x = canvas.width - player.width / 2;
+            player.x = canvas.width - player.imgWidth / 2;
         }
     }
     // 왼쪽
@@ -76,9 +74,9 @@ function update() {
         player.x -= player.speed;
         player.img = img_left;
         // 플레이어가 왼쪽 경계 밖으로 나가지 않도록 제한
-        if(player.x - player.width / 2 < 0){
+        if (player.x - player.imgWidth / 2 < 0) {
             // 왼쪽 경계 바로 안쪽으로 위치 고정
-            player.x = player.width / 2;
+            player.x = player.imgWidth / 2;
         }
     }
     else {
@@ -89,25 +87,25 @@ function update() {
     if (keys[38]) {
         player.y -= player.speed;
         // 위쪽 경계 밖으로 나가지 않도록 제한
-        if(player.y - player.height / 2 < 0) { 
+        if (player.y - player.imgHeight / 2 < 0) {
             // 위쪽 경계 바로 안쪽으로 위치 고정
-            player.y = player.height / 2;
+            player.y = player.imgHeight / 2;
         }
     }
     // 아래
     if (keys[40]) {
         player.y += player.speed;
         // 아래쪽 경계 밖으로 나가지 않도록 제한
-        if(player.y + player.height / 2 > canvas.height){
+        if (player.y + player.imgHeight / 2 > canvas.height) {
             // 아래쪽 경계 바로 안쪽으로 위치 고정
-            player.y = canvas.height - player.height / 2;
+            player.y = canvas.height - player.imgHeight / 2;
         }
     }
 
     // 스페이스 = 공격
     if (keys[32]) {
         let now = Date.now();
-        if (now - bulletTime > delay){
+        if (now - bulletTime > delay) {
             shootBullet();
             bulletTime = now;
         }
@@ -123,8 +121,9 @@ function update() {
     }
 
     item.update(canvas);
-    
+
     enemy.update(canvas, [player.x, player.y]);
+    isGameOver = enemy.isGameOver;
 }
 
 // ####### 총알 함수 ##########
@@ -172,8 +171,8 @@ function shootBullet() {
     let totalWidth = (player.attack - 1) * space;
     for (let i = 0; i < player.attack; i++) {
         let bullet = {
-            x: player.x + player.width / 2 - 46 - totalWidth / 2 + i * space,// 비행기 중앙에서 발사
-            y: player.y - player.height / 2 - 80, // 비행기 조정석 위치에서 발사
+            x: player.x + player.imgWidth / 2 - 46 - totalWidth / 2 + i * space,// 비행기 중앙에서 발사
+            y: player.y - player.imgHeight / 2 - 60, // 비행기 조정석 위치에서 발사
             width: 40, // 총알 너비
             height: 80, // 총알 높이
             speed: 20 // 총알 속도
@@ -275,66 +274,64 @@ function updateBullets() {
 // ####### 폭탄 함수 ########## (오류수정 gpt)
 let bombs = [];
 
-BombEffect.images = [];
-
-(function preBombImages(){
-    for (let i = 0; i < 4; i++) {
-        let img = new Image();
-        img.src = `../images/PNG/Image${189 + i}.png`;
-        BombEffect.images.push(img);
-        // 189~192번 이미지 4장 로드 후 배열에 추가
-    }
-    for (let i = 0; i < 7; i++) {
-        for (let j = 1; j < 5; j++) {
-            let img = new Image();
-            img.src = `../images/PNG/Image193_${j}.png`;
-            BombEffect.images.push(img);
-            // 193_1.png ~ 193_4.png 이미지 7세트(총 28장) 로드 후 배열에 추가
-        }
-    }
-})();
-
-function BombEffect(x, y) {
+function BombEffect(x, y, w, h) {
     this.x = x;
     this.y = y;
     this.width = 350;
     this.height = 350;
     this.interval = 3;
     this.updateCnt = 0;
-    this.imgArr = BombEffect.images;
+    this.animFrames = new Array();
+    this.currentFrame = 0;
+
+    for (let i = 0; i < 4; i++) {
+        let img = new Image();
+        img.src = `../images/PNG/Image${189 + i}.png`;
+        this.animFrames.push(img);
+        // 189~192번 이미지 4장 로드 후 배열에 추가
+    }
+    for (let i = 0; i < 7; i++) {
+        for (let j = 1; j < 5; j++) {
+            let img = new Image();
+            img.src = `../images/PNG/Image193_${j}.png`;
+            this.animFrames.push(img);
+            // 193_1.png ~ 193_4.png 이미지 7세트(총 28장) 로드 후 배열에 추가
+        }
+    }
 }
 
 // 폭탄 이펙트를 그리는 함수
 function drawEffect() {
-    for (let i = effects.length - 1; i >= 0; i--) {
+    for (let i = 0; i < effects.length; i++) {
         let eff = effects[i];
-        eff.updateCnt++;
-        
-        let n = Math.floor(eff.updateCnt / eff.interval) - 1;
-        if (n < 0) n = 0;
-        
+        let frame = eff.animFrames[eff.currentFrame % eff.animFrames.length]
 
-        if (eff.imgArr.length <= n) {
-            effects.splice(i, 1);
-            continue;
+        ctx.drawImage(frame, eff.x, eff.y, eff.width, eff.height);
+        eff.updateCnt++;
+
+        // 프레임 간격마다 새로운 프레임으로 전환
+        if (eff.updateCnt % eff.interval == 0) {
+            eff.currentFrame++;
         }
 
-        if (eff.updateCnt % eff.interval == 0) {
-            ctx.drawImage(eff.imgArr[n], eff.x, eff.y, eff.width, eff.height);
+        // 현재 프레임이 마지막 프레임을 초과하면 해당 이펙트는 제거
+        if (eff.animFrames.length < eff.currentFrame) {
+            effects.splice(i, 1);
+            continue;
         }
     }
 }
 
 // 폭탄 발사 함수
 function shootBomb() {
-    if(bomb > 0){
+    if (bomb > 0) {
         bomb -= 1;
 
         let bombobj = {
             width: 30,
             height: 30,
             x: player.x - 30 / 2, // 플레이어 중앙 정렬(폭탄의 width / 2)
-            y: player.y + player.height / 2 - 30,
+            y: player.y + player.imgHeight / 2 - 30,
             speed: 10,
             targetY: player.y - 100, // 폭탄이 플레이어 y축 위로 올라가서 터짐
             exploded: false, // 폭발 여부 체크
@@ -349,7 +346,7 @@ function shootBomb() {
 function drawBombs() {
     for (let i = 0; i < bombs.length; i++) {
         let bomb = bombs[i];
-        if (!bomb.exploded){ // 아직 터지지 않은 폭탄만 그리기
+        if (!bomb.exploded) { // 아직 터지지 않은 폭탄만 그리기
             ctx.drawImage(img_bomb, bomb.x, bomb.y, bomb.width, bomb.height);
         }
     }
@@ -360,7 +357,7 @@ let clearEnemyBullets = false;
 function updateBombs() {
     for (let i = bombs.length - 1; i >= 0; i--) {
         let bomb = bombs[i];
-        
+
         if (!bomb.exploded) {
             bomb.y -= bomb.speed;
 
@@ -389,37 +386,49 @@ function updateBombs() {
             }
 
             if (bomb.explosionTimer > bomb.explosionDuration) {
-                bombs.splice(i, 1); 
+                bombs.splice(i, 1);
             }
         }
     }
 }
 
 // ####### 충돌 처리 ########## (구글, gpt)
-let isGameOver = false; 
+let isGameOver = false;
 
 // 두 객체의 충돌 여부를 판별하는 함수 (AABB 충돌 검사)
-function checkCollision(obj1, obj2){
-    return(
+function checkCollision(obj1, obj2) {
+    return (
         obj1.x < obj2.x + obj2.width && // obj1 왼쪽이 obj2 오른쪽보다 왼쪽에 있고
         obj1.x + obj1.width > obj2.x && // obj1 오른쪽이 obj2 왼쪽보다 오른쪽에 있고
-        obj1.y < obj2.y + obj2.height * 0.5 && // obj1 위쪽이 obj2 아래쪽보다 위에 있고
+        obj1.y < obj2.y + obj2.height && // obj1 위쪽이 obj2 아래쪽보다 위에 있고
         obj1.y + obj1.height > obj2.y // obj1 아래쪽이 obj2 위쪽보다 아래에 있으면 충돌
     );
 }
 
 // 충돌 상태를 처리하는 함수
 function handleCollision() {
-            
+
     // 플레이어 총알과 적 충돌 처리
     for (let i = playerBullets.length - 1; i >= 0; i--) {
         let bullet = playerBullets[i];
         for (let j = enemy.enemies.length - 1; j >= 0; j--) {
             let oneEnemy = enemy.enemies[j];
 
-            if (checkCollision(bullet, oneEnemy)){
+            if (checkCollision(bullet, oneEnemy)) {
                 playerBullets.splice(i, 1);
-                enemy.damaged(oneEnemy, 1);
+                let itemArr = enemy.damaged(oneEnemy, 1);
+
+                if (itemArr != undefined && itemArr[2] > 0) {
+                    for (let k = 0; k < itemArr[2]; k++) {
+                        item.createItem(itemArr[0], itemArr[1], "power");
+                    }
+                }
+
+                if (itemArr != undefined && itemArr[3] > 0) {
+                    for (let k = 0; k < itemArr[3]; k++) {
+                        item.createItem(itemArr[0], itemArr[1], "bomb");
+                    }
+                }
                 break;
             }
         }
@@ -431,7 +440,7 @@ function handleCollision() {
         for (let j = enemy.enemies.length - 1; j >= 0; j--) {
             let oneEnemy = enemy.enemies[j];
 
-            if (checkCollision(bomb, oneEnemy)){
+            if (checkCollision(bomb, oneEnemy)) {
                 bombs.splice(i, 1);
                 // 폭탄 제거
                 enemy.enemies.splice(j, 1);
@@ -442,9 +451,9 @@ function handleCollision() {
     }
 
     // 플레이어와 아이템 충돌 처리
-    for (let i = item.items.length -1; i >= 0; i--) {
+    for (let i = item.items.length - 1; i >= 0; i--) {
         let oneItem = item.items[i];
-        if (checkCollision(player, oneItem)){
+        if (checkCollision(player, oneItem)) {
             addItem(oneItem);
             item.items.splice(i, 1);
         }
@@ -453,7 +462,7 @@ function handleCollision() {
     // 플레이어와 적 총알 충돌 처리
     for (let i = enemy.bullets.length - 1; i >= 0; i--) {
         let bullet = enemy.bullets[i];
-        if (checkCollision(bullet, player) && !player.isInvincible){
+        if (checkCollision(bullet, player) && !player.isInvincible) {
             life -= 1;
             // 플레이어 생명 1 감소
             player.isInvincible = true;
@@ -488,10 +497,10 @@ function handleCollision() {
 }
 
 // # 아이템 획득 처리
-function addItem(item){
-    switch(item.type){
+function addItem(item) {
+    switch (item.type) {
         case 'power':
-            if(player.attack < 5){
+            if (player.attack < 5) {
                 player.attack += 2;
             }
             break;
@@ -508,6 +517,9 @@ function gameOver() {
     ctx.fillStyle = 'red';
     ctx.font = '48px Arial';
     ctx.fillText('Game Over', canvas.width / 2 - 120, canvas.height / 2);
+
+    ctx.font = '24px Arial';
+    ctx.fillText('Press F5 to restart', canvas.width / 2 - 100, canvas.height / 2 + 80);
 }
 
 // ####### 그리기 ##########
@@ -516,26 +528,26 @@ function drawMap() {
 }
 
 function drawPlayer() {
-    ctx.drawImage(player.img, player.x - player.width / 2, player.y - player.height / 2, player.width, player.height);
+    ctx.drawImage(player.img, player.x - player.imgWidth / 2, player.y - player.imgWidth / 2, player.imgWidth, player.imgHeight);
 }
 
 function drawEtc() {
     // 이펙트 그리기
     drawEffect();
-    
+
     // 적 그리기
     enemy.draw(ctx);
-    
+
     // 아이템 그리기
     item.draw(ctx);
 }
 
 function drawAttack() {
-    update(); 
+    update();
     drawBullets();
     updateBullets();
     drawBombs();
-    updateBombs(); 
+    updateBombs();
     handleCollision();
 }
 
@@ -543,14 +555,14 @@ function drawLife() {
     ctx.fillStyle = 'red';
     ctx.font = '20px Arial';
     ctx.fillText('life : ' + life, 10, 40);
-    
+
 }
 
 function drawBomb() {
     ctx.fillStyle = 'red';
     ctx.font = '20px Arial';
     ctx.fillText('Bomb : ' + bomb, 10, 70);
-    
+
 }
 
 // ####### gameloop ##########
@@ -562,16 +574,16 @@ function gameloop() {
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    drawMap(); 
-    drawEtc(); 
+    drawMap();
+    drawEtc();
 
     if (player.isVisible) {
-        drawPlayer(); 
+        drawPlayer();
     }
 
-    drawAttack(); 
+    drawAttack();
     drawLife();
-    drawBomb(); 
+    drawBomb();
 
     requestAnimationFrame(gameloop);
 }
