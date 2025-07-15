@@ -191,7 +191,7 @@ function LargePlane(x, y, destX, destY) {
     }
 }
 
-// 보스
+// 보스 Phase 1
 function BossPlane(x, y) {
     this.x = x;
     this.y = y;
@@ -199,7 +199,7 @@ function BossPlane(x, y) {
     this.destYs = [100, 100];
     this.width = 320;
     this.height = 160;
-    this.life = 250;
+    this.life = 1;
     this.speed = 1;
     this.updateCnt = 0;
     this.img = new Image(this.width, this.height);
@@ -233,60 +233,55 @@ function BossPlane(x, y) {
             // 공격 패턴 A 
             // 하단 호 모양으로 5x3연발 공격
             for (let j = 0; j < 3; j++) {
-                if (this.isDestroyed) {
-                    return;
-                }
                 for (let i = 0; i < 5; i++) {
                     this.updateXY();
                     let destX = this.x + 1000 * Math.cos(degToRad(startAng + (15 * i)));
                     let destY = this.y + 1000 * Math.sin(degToRad(startAng + (15 * i)));
                     bullets.push(new RedBullet(this.tw[0], this.tw[1], destX + 150, destY));
                 }
+                if (this.isDestroyed) {
+                    this.onDestroyed();
+                    return;
+                }
                 await sleep(200);
             }
 
-            await sleep(1000);
+            await sleep(300);
 
             // 공격 패턴 B
             // 랜덤으로 탄을 난사하는 공격
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < 20; i++) {
                 this.updateXY();
                 bullets.push(new BlueBullet(this.rw[0], this.rw[1], rangeRandom(0, canvasWidth), rangeRandom(0, canvasHeight)));
                 bullets.push(new BlueBullet(this.lw[0], this.lw[1], rangeRandom(0, canvasWidth), rangeRandom(0, canvasHeight)));
                 bullets.push(new BlueBullet(this.rw[0], this.rw[1], rangeRandom(0, canvasWidth), rangeRandom(0, canvasHeight)));
                 bullets.push(new BlueBullet(this.lw[0], this.lw[1], rangeRandom(0, canvasWidth), rangeRandom(0, canvasHeight)));
-                await sleep(300);
+                if (this.isDestroyed) {
+                    this.onDestroyed();
+                    return;
+                }
+                await sleep(250);
             }
 
-            await sleep(1000);
+            await sleep(300);
 
             // 공격 패턴 C
             // 유도 공격
             for (let j = 0; j < 3; j++) {
-                if (this.isDestroyed) {
-                    return;
-                }
                 for (let i = 0; i < 3; i++) {
                     this.updateXY();
                     bullets.push(new BlueBullet(this.lw[0], this.lw[1], playerPos[0], playerPos[1]));
                     bullets.push(new BlueBullet(this.rw[0], this.rw[1], playerPos[0], playerPos[1]));
                     await sleep(50);
                 }
-                await sleep(600);
+                if (this.isDestroyed) {
+                    this.onDestroyed();
+                    return;
+                }
+                await sleep(300);
             }
 
-            await sleep(1000);
-
-            // 공격 패턴 D
-            // 나선 공격
-
-
-
-            // bullets.push(new BlueBullet(this.x + 57, this.y + 70));
-            // await sleep(50);
-            // bullets.push(new BlueBullet(this.x + 56, this.y + 70));
-            // await sleep(50);
-            // bullets.push(new BlueBullet(this.x + 57, this.y + 70));
+            await sleep(300);
         }
     }
 
@@ -297,9 +292,124 @@ function BossPlane(x, y) {
         this.tw = [this.x + this.width / 2 - 10, this.y + this.height];  // 꼬리 날개
     }
 
-    // Phase 2 공격
-    this.fire2 = async () => {
+    this.onDestroyed = async () => {
+        await sleep(3000);
 
+        effects.push(new RealBossFirstAnim(this.x + 50, this.y, 200, 120)); 
+
+        await sleep(3000);
+
+        let enemy = new RealBossPlane(this.x, this.y);
+        enemy.changeNextMove();
+        enemy.fire();
+        enemies.push(enemy);
+    }
+}
+
+const RealBossState = {
+    first: 0,
+    idle: 1,
+    attack: 2,
+    bigAttack: 3,
+}
+
+// 보스 Phase 2
+function RealBossPlane(x, y) {
+    this.x = x;
+    this.y = y;
+    this.destXs = [0, 135];
+    this.destYs = [100, 100];
+    this.width = 200;
+    this.height = 120;
+    this.life = 300;
+    this.speed = 3;
+    this.updateCnt = 0;
+    this.isDestroyed = false;
+    this.nextMove = 0;
+    this.lw = [];
+    this.rw = [];
+    this.tw = [];
+    this.img = new Image();
+    this.img.src = "../images/PNG/Image161.png";
+
+    this.changeNextMove = async () => {
+        while (!this.isDestroyed) {
+            await sleep(3200);
+            if (this.nextMove == 0) {
+                this.nextMove = 1;
+            }
+            else {
+                this.nextMove = 0;
+            }
+        }
+    }
+
+    this.fire = async () => {
+        // 출현할 때는 공격 안함.
+        await sleep(2500);
+
+        // 발사 각
+        let startAng = 60;
+
+        while (true) {
+            // 공격 패턴 A 
+            // 하단 호 모양으로 5x3연발 공격
+            for (let j = 0; j < 3; j++) {
+                for (let i = 0; i < 5; i++) {
+                    this.updateXY();
+                    let destX = this.x + 1000 * Math.cos(degToRad(startAng + (15 * i)));
+                    let destY = this.y + 1000 * Math.sin(degToRad(startAng + (15 * i)));
+                    bullets.push(new RedBullet(this.tw[0], this.tw[1], destX + 150, destY));
+                }
+                if (this.isDestroyed) {
+                    return;
+                }
+                await sleep(200);
+            }
+
+            await sleep(300);
+
+            // 공격 패턴 B
+            // 랜덤으로 탄을 난사하는 공격
+            for (let i = 0; i < 20; i++) {
+                this.updateXY();
+                bullets.push(new BlueBullet(this.rw[0], this.rw[1], rangeRandom(0, canvasWidth), rangeRandom(0, canvasHeight)));
+                bullets.push(new BlueBullet(this.lw[0], this.lw[1], rangeRandom(0, canvasWidth), rangeRandom(0, canvasHeight)));
+                bullets.push(new BlueBullet(this.rw[0], this.rw[1], rangeRandom(0, canvasWidth), rangeRandom(0, canvasHeight)));
+                bullets.push(new BlueBullet(this.lw[0], this.lw[1], rangeRandom(0, canvasWidth), rangeRandom(0, canvasHeight)));
+
+                if (this.isDestroyed) {
+                    return;
+                }
+                await sleep(250);
+            }
+
+            await sleep(300);
+
+            // 공격 패턴 C
+            // 유도 공격
+            for (let j = 0; j < 3; j++) {
+                for (let i = 0; i < 3; i++) {
+                    this.updateXY();
+                    bullets.push(new BlueBullet(this.lw[0], this.lw[1], playerPos[0], playerPos[1]));
+                    bullets.push(new BlueBullet(this.rw[0], this.rw[1], playerPos[0], playerPos[1]));
+                    await sleep(50);
+                }
+                if (this.isDestroyed) {
+                    return;
+                }
+                await sleep(300);
+            }
+
+            await sleep(300);
+        }
+    }
+
+    this.updateXY = () => {
+        // 발사 위치
+        this.lw = [this.x + this.width / 3, this.y + 68];  // 왼쪽 날개
+        this.rw = [this.x + this.width / 3 + 100, this.y + 68];  // 오른쪽 날개
+        this.tw = [this.x + this.width / 2 - 10, this.y + this.height];  // 꼬리 날개
     }
 }
 
@@ -371,19 +481,37 @@ function ExplosionAnim(x, y, w, h) {
     this.y = y;
     this.width = w;
     this.height = h;
-    this.interval = 2;
+    this.interval = 5;
     this.updateCnt = 0;
-    this.imgArr = new Array();
+    this.animFrames = new Array();
+    this.currentFrame = 0;
 
     for (let i = 0; i < 10; i++) {
         let img = new Image();
-        //img.src = this.imgPaths[i];
         img.src = `../images/PNG/Image${81 + i}.png`;
-        this.imgArr.push(img);
+        this.animFrames.push(img);
     }
 }
 
-export function draw(ctx) {
+// 보스 로봇 등장 씬
+function RealBossFirstAnim(x, y, w, h) {
+    this.x = x;
+    this.y = y;
+    this.width = w;
+    this.height = h;
+    this.interval = 10;
+    this.updateCnt = 0;
+    this.animFrames = new Array();
+    this.currentFrame = 0;
+
+    for (let i = 0; i < 6; i++) {
+        let img = new Image();
+        img.src = `../images/PNG/Image${156 + i}.png`;
+        this.animFrames.push(img);
+    }
+}
+
+export async function draw(ctx) {
     // 적 그리기
     for (let i = 0; i < enemies.length; i++) {
         let enemy = enemies[i];
@@ -391,6 +519,11 @@ export function draw(ctx) {
         if (enemy.img.src != undefined) {
             ctx.drawImage(enemy.img, enemy.x, enemy.y, enemy.width, enemy.height);
         }
+        // else if (enemy instanceof RealBossPlane){
+        //     for (let i = 0; i < enemy.mainImgs.length; i++){
+        //         ctx.drawImage(enemy.mainImgs[i], 100, 100, 100, 100);
+        //     }
+        // }
         // 이미지 파일이 없으면 적을 박스로 그리기
         else {
             ctx.fillStyle = 'red';
@@ -410,16 +543,20 @@ export function draw(ctx) {
     // 이펙트 그리기
     for (let i = 0; i < effects.length; i++) {
         let eff = effects[i];
-        eff.updateCnt++;
-        let n = Math.floor(eff.updateCnt / eff.interval) - 1;
+        let frame = eff.animFrames[eff.currentFrame % eff.animFrames.length]
 
-        if (eff.imgArr.length <= n) {
-            effects.splice(i);
-            continue;
+        ctx.drawImage(frame, eff.x, eff.y, eff.width, eff.height);
+        eff.updateCnt++;
+
+        // 프레임 간격마다 새로운 프레임으로 전환
+        if (eff.updateCnt % eff.interval == 0) {
+            eff.currentFrame++;
         }
 
-        if (eff.updateCnt % eff.interval == 0) {
-            ctx.drawImage(eff.imgArr[n], eff.x, eff.y, eff.width, eff.height);
+        // 현재 프레임이 마지막 프레임을 초과하면 해당 이펙트는 제거
+        if (eff.animFrames.length < eff.currentFrame) {
+            effects.splice(i, 1);
+            continue;
         }
     }
 }
@@ -549,7 +686,7 @@ function moveEnemy(enemy) {
             }
         }
     }
-    else if (enemy instanceof BossPlane) {
+    else if (enemy instanceof BossPlane || enemy instanceof RealBossPlane) {
         if (enemy.updateCnt < 200) {
             enemy.y += enemy.speed;
         }
@@ -643,7 +780,7 @@ async function addLargePlane(planeNum, intervalMs, x, y, destX, destY) {
     }
 }
 
-async function addBoss() {
+function addBoss() {
     let enemy = new BossPlane(canvasWidth / 2 - 160, -160);
     enemy.changeNextMove();
     enemy.fire();
@@ -691,7 +828,7 @@ function createEnemy() {
     switch (frameCnt) {
         case 100:
             addBoss();
-            addRedSmallPlane(4, 300, true, canvasWidth / 5 * 1, RedSmallPattern.VERTICAL);
+            //addRedSmallPlane(4, 300, true, canvasWidth / 5 * 1, RedSmallPattern.VERTICAL);
             //addLargePlane(1, 0, 0, -100, 80, 300);
             // addRedSmallPlane(5, 200);
             //addBlueSmallPlane(10, 200, true, -1, BlueSmallPattern.RIGHT);
@@ -823,6 +960,7 @@ function createEnemy() {
         // case 8200:
         //     break;
         // case 8300:
+        // addBoss();
         //     break;
     }
 }
