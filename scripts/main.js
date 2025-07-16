@@ -129,7 +129,10 @@ function update() {
     item.update(canvas);
 
     enemy.update(canvas, [player.x, player.y]);
-    isGameOver = enemy.isGameOver;
+    if (enemy.isGameOver){
+        isGameOver = true;
+        win = true;
+    }
 }
 
 // ########## 총알 함수 ##########
@@ -375,13 +378,14 @@ function drawDieEffect() {
 
 // ########## 충돌 처리 ########## (구글, gpt)
 let isGameOver = false;
+let win = false;
 
 // 두 객체의 충돌 여부를 판별하는 함수 (AABB 충돌 처리)
 function checkCollision(obj1, obj2) {
     return (
         obj1.x < obj2.x + obj2.width && // obj1 왼쪽이 obj2 오른쪽보다 왼쪽에 있고
         obj1.x + obj1.width > obj2.x && // obj1 오른쪽이 obj2 왼쪽보다 오른쪽에 있고
-        obj1.y < obj2.y + obj2.height * 0.5 && // obj1 위쪽이 obj2 아래쪽보다 위에 있고
+        obj1.y < obj2.y + obj2.height && // obj1 위쪽이 obj2 아래쪽보다 위에 있고
         obj1.y + obj1.height > obj2.y // obj1 아래쪽이 obj2 위쪽보다 아래에 있으면 충돌
     );
 }
@@ -405,6 +409,7 @@ function handleCollision() {
                 damagedEffects.push(new damagedEffect(bullet.x, bullet.y, effectWidth, effectHeight));
 
                 playerBullets.splice(i, 1);
+
                 let itemArr = enemy.damaged(oneEnemy, 1);
 
                 if (itemArr != undefined && itemArr[2] > 0) {
@@ -441,7 +446,9 @@ function handleCollision() {
     // 플레이어와 아이템 충돌 처리
     for (let i = item.items.length - 1; i >= 0; i--) {
         let oneItem = item.items[i];
-        if (checkCollision(player, oneItem)) {
+        let collision = (player.x < oneItem.x + oneItem.width) && (player.x + player.imgWidth > oneItem.x) &&
+        (player.y < oneItem.y + oneItem.height) && (player.y + player.imgHeight > oneItem.y)
+        if (collision) {
             addItem(oneItem);
             item.items.splice(i, 1);
         }
@@ -494,7 +501,8 @@ function handleCollision() {
                 player.isVisible = !player.isVisible;
                 blinkCount++;
 
-                if (blinkCount > 5) {
+                // blinkCount가 초과하면 setInterval 작업을 종료, 플레이어의 무적 상태를 해제
+                if (blinkCount > 20) {
                     clearInterval(blinkInterval);
                     player.isVisible = true;
                     player.isInvincible = false;
@@ -537,7 +545,12 @@ function gameOver() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = 'red';
     ctx.font = '48px Arial';
-    ctx.fillText('Game Over', canvas.width / 2 - 120, canvas.height / 2);
+    if (win){
+        ctx.fillText(' You  Win', canvas.width / 2 - 120, canvas.height / 2);
+    }
+    else {
+        ctx.fillText('Game Over', canvas.width / 2 - 120, canvas.height / 2);
+    }
 
     ctx.font = '24px Arial';
     ctx.fillText('Press F5 to restart', canvas.width / 2 - 100, canvas.height / 2 + 80);
@@ -612,4 +625,3 @@ function gameloop() {
 }
 
 gameloop();
-

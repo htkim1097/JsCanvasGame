@@ -111,7 +111,7 @@ function MiddlePlane(x, y, destX, destY, isHoming) {
     this.destY = destY;
     this.width = 70;
     this.height = 70;
-    this.life = 12;
+    this.life = 6;
     this.speed = 3;
     this.updateCnt = 0;
     this.img = new Image();
@@ -146,7 +146,7 @@ function LargePlane(x, y, destX, destY) {
     this.destY = destY;
     this.width = 130;
     this.height = 95;
-    this.life = 45;
+    this.life = 26;
     this.speed = 2;
     this.updateCnt = 0;
     this.img = new Image(this.width, this.height);
@@ -198,7 +198,7 @@ function BossPlane(x, y) {
     this.destYs = [100, 100];
     this.width = 320;
     this.height = 160;
-    this.life = 350;
+    this.life = 150;
     this.speed = 1;
     this.updateCnt = 0;
     this.img = new Image(this.width, this.height);
@@ -310,7 +310,7 @@ function RealBossPlane(x, y) {
     this.destYs = [100, 180, 30, 100, 20, 250, 200, 40, 60];
     this.width = 200;
     this.height = 120;
-    this.life = 450;
+    this.life = 300;
     this.speed = 4;
     this.updateCnt = 0;
     this.isDestroyed = false;
@@ -946,7 +946,8 @@ function createEnemy() {
             addBlueSmallPlane(4, 200, true, 300, BlueSmallPattern.LEFT);
             break;
         case 350:
-            addMiddlePlane(3, 300, 150, -50, 100, 100, true);
+            addMiddlePlane(1, 300, 150, -50, 100, 100, true);
+            addRedSmallPlane(4, 300, true);
             break;
         case 500:
             addRedSmallPlane(4, 300, true, canvasWidth / 5 * 3, RedSmallPattern.VERTICAL);
@@ -970,10 +971,10 @@ function createEnemy() {
             addLargePlane(1, 0, rangeRandom(0, canvasWidth - 50), -100, rangeRandom(0, canvasWidth - 70), rangeRandom(30, 250));
             break;
         case 1500:
-            addRedSmallPlane(5, 300);
+            addRedSmallPlane(6, 300, false, -1);
             break;
         case 1600:
-            addLargePlane(1, 0, 280, -100, 300, 100);
+            addRedSmallPlane(4, 300, true);
             break;
         case 1800:
             addBlueSmallPlane(6, 200, true, -1, BlueSmallPattern.RIGHT);
@@ -991,7 +992,6 @@ function createEnemy() {
             addBlueSmallPlane(4, 200, true, -1);
             break;
         case 2300:
-            addLargePlane(1, 0, rangeRandom(0, canvasWidth - 50), -100, rangeRandom(0, canvasWidth - 70), rangeRandom(30, 250));
             addLargePlane(1, 0, rangeRandom(0, canvasWidth - 50), -100, rangeRandom(0, canvasWidth - 70), rangeRandom(30, 250));
             break;
         case 2500:
