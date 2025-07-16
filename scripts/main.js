@@ -35,7 +35,6 @@ let player = {
     y: 550, // 시작 위치 y축 좌표
     attack: 1, // 총알 갯수
     speed: 5,
-    die: false,
     isInvincible: false, // 무적 상태
     isVisible: true, // HP 1개 차감후 깜빡이는 효과
     img: img_player
