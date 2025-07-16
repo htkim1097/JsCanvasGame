@@ -14,12 +14,16 @@ let img_bullet = new Image();
 let img_bomb = new Image();
 let img_left = new Image();
 let img_right = new Image();
+let img_life = new Image();
+let img_bomb2 = new Image();
 
 img_player.src = "../images/png/Image45.png";
 img_bullet.src = "../images/bullet.png";
 img_bomb.src = "../images/bomb.png";
 img_left.src = "../images/left.png";
 img_right.src = "../images/right.png";
+img_life.src = "../images/life.png";
+img_bomb2.src = "../images/bomb2.png";
 
 // 플레이어
 let player = {
@@ -40,8 +44,8 @@ let player = {
 let delay = 200; // 발사 딜레이
 let bulletTime = 0;
 let bombTime = 0;
-let life = 300;
-let bomb = 5;
+let life = 3;
+let bomb = 3;
 
 var keys = []; // 키보드
 let effects = []; // 폭탄 사용시 폭발 이펙트
@@ -106,7 +110,7 @@ function update() {
 
     // 스페이스 = 공격
     bulletTime += 1000 / delay;
-    if(bulletTime >= 100) {        
+    if (bulletTime >= 100) {
         if (keys[32]) {
             shootBullet();
             bulletTime = 0; // 발사 후 타이머 초기화
@@ -140,7 +144,7 @@ function shootBullet() {
             y: player.y - player.imgHeight / 2 - 60, // 비행기 조정석 위치에서 발사
             width: 40, // 총알 너비
             height: 80, // 총알 높이
-            speed: 20 // 총알 속도
+            speed: 30 // 총알 속도
         };
         playerBullets.push(bullet);
     }
@@ -392,13 +396,13 @@ function handleCollision() {
             let oneEnemy = enemy.enemies[j];
 
             if (checkCollision(bullet, oneEnemy)) {
-            // 적 타격 이펙트 좌표 계산
-            const effectWidth = 30; // 적 타격 이펙트 너비
-            const effectHeight = 30; // 적 타격 이펙트 높이
-            const offsetY = + 50; // 적 타격 이펙트 Y 방향으로 내림
-            const effectX = oneEnemy.x + oneEnemy.width / 2 - effectWidth / 2;
-            const effectY = oneEnemy.y + oneEnemy.height / 2 - effectHeight / 2 + offsetY;
-            damagedEffects.push(new damagedEffect(bullet.x, bullet.y, effectWidth, effectHeight));
+                // 적 타격 이펙트 좌표 계산
+                const effectWidth = 30; // 적 타격 이펙트 너비
+                const effectHeight = 30; // 적 타격 이펙트 높이
+                const offsetY = + 50; // 적 타격 이펙트 Y 방향으로 내림
+                const effectX = oneEnemy.x + oneEnemy.width / 2 - effectWidth / 2;
+                const effectY = oneEnemy.y + oneEnemy.height / 2 - effectHeight / 2 + offsetY;
+                damagedEffects.push(new damagedEffect(bullet.x, bullet.y, effectWidth, effectHeight));
 
                 playerBullets.splice(i, 1);
                 let itemArr = enemy.damaged(oneEnemy, 1);
@@ -449,7 +453,27 @@ function handleCollision() {
         if (checkCollision(bullet, player) && !player.isInvincible) {
             // 플레이어 생명 1 감소
             life -= 1;
-            
+
+            // 이전 업그레이드 수만큼 아이템 드랍
+            if (player.attack == 1) {
+                item.createItem(player.x, player.y - 20, "power");
+            }
+            else if (player.attack == 3) {
+                item.createItem(player.x, player.y - 20, "power");
+                item.createItem(player.x, player.y - 20, "power");
+            }
+            else if (player.attack == 5) {
+                item.createItem(player.x, player.y - 20, "power");
+                item.createItem(player.x, player.y - 20, "power");
+                item.createItem(player.x, player.y - 20, "power");
+            }
+
+            // 폭탄 2개 드랍
+            item.createItem(player.x, player.y - 20, "bomb");
+            item.createItem(player.x, player.y - 20, "bomb");
+
+            player.attack = 1;
+
             // 플레이어 죽었을때 폭발 이펙트
             const effectWidth = 100; // 이펙트 좌표
             const effectHeight = 100;
@@ -458,23 +482,8 @@ function handleCollision() {
             dieEffects.push(new dieEffect(effectX, effectY));
 
             // 사망시 플레이어 위치 초기화
-            player.x = 210; 
+            player.x = 210;
             player.y = 550;
-            
-            // // #####################################################
-            // let dieCount = 0;
-            // let blinkInterval = setInterval(() => {
-            //     player.isVisible = !player.isVisible;
-            //     blinkCount++;
-            //     if (blinkCount > 5) {
-            //         clearInterval(blinkInterval);
-            //         player.isVisible = true;
-            //         player.isInvincible = false;
-            //     }
-            // }, 200);
-
-
-
 
             // 무적 상태 시작
             player.isInvincible = true;
@@ -484,6 +493,7 @@ function handleCollision() {
             let blinkInterval = setInterval(() => {
                 player.isVisible = !player.isVisible;
                 blinkCount++;
+
                 if (blinkCount > 5) {
                     clearInterval(blinkInterval);
                     player.isVisible = true;
@@ -551,8 +561,6 @@ function drawEtc() {
     drawDamagedEffect();
     drawDieEffect();
 
-
-
     // 아이템 그리기
     item.draw(ctx);
 }
@@ -567,17 +575,17 @@ function drawAttack() {
 }
 
 function drawLife() {
-    ctx.fillStyle = 'red';
+    ctx.fillStyle = 'yellow';
     ctx.font = '20px Arial';
-    ctx.fillText('life : ' + life, 10, 40);
-
+    ctx.drawImage(img_life, 10, 10, 30, 30);
+    ctx.fillText("x " + life, 45, 30);
 }
 
 function drawBomb() {
-    ctx.fillStyle = 'red';
+    ctx.fillStyle = 'yellow';
     ctx.font = '20px Arial';
-    ctx.fillText('Bomb : ' + bomb, 10, 70);
-
+    ctx.drawImage(img_bomb2, 10, 50, 30, 30);
+    ctx.fillText('x ' + bomb, 45, 70);
 }
 
 // ########## gameloop ##########
