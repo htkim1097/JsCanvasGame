@@ -4,7 +4,6 @@ const canvasHeight = 600;
 
 // 아이템 객체 배열
 export const items = [];
-// 폭발 이펙트 객체 -> 아이템 객체
 
 let img_poweritem = new Image();
 let img_bombitem = new Image();
@@ -17,8 +16,8 @@ function Item(x, y, type) {
     this.width = 20;
     this.height = 20;
     this.type = type;  // 타입 설정
-    this.interval = 2;  // 이미지 전환 간격
-    this.updateCnt = 0;  // 업데이트 횟수
+    //this.interval = 2;  // 이미지 전환 간격
+    //this.updateCnt = 0;  // 업데이트 횟수
     this.speed = 1.7;  // 속도
  
 const directions = [-1, 1]; // 왼쪽/오른쪽 , 위/아래
@@ -30,18 +29,25 @@ this.dx = dirX * this.speed;
 this.dy = dirY * this.speed;
 }
 
-// 아이템 생성할 때
-// 적 파괴 위치
-// 플레이어 파괴 위치
-//export function createItem(x, y, type) {
-//    items.push(new Item(x, y, type));
-//}
+if (type === 'bomb'){
+    this.frame = frame;
+    this.frameCount = 7;
+    this.frameWidth = 20;
+    this.frameHeigt = 100;
+    this.frameDelay = 100;
+}
+
+
+
 
 // 테스트용
-//createItem(rangeRandom(0, 300), rangeRandom(0, 300), "power");
-//createItem(rangeRandom(0, 300), rangeRandom(0, 300), "power");
-//createItem(rangeRandom(0, 300), rangeRandom(0, 300), "bomb");
-//createItem(rangeRandom(0, 300), rangeRandom(0, 300), "bomb");
+createItem(rangeRandom(0, 300), rangeRandom(0, 300), "power");
+createItem(rangeRandom(0, 300), rangeRandom(0, 300), "power");
+createItem(rangeRandom(0, 300), rangeRandom(0, 300), "power");
+createItem(rangeRandom(0, 300), rangeRandom(0, 300), "bomb");
+createItem(rangeRandom(0, 300), rangeRandom(0, 300), "bomb");
+createItem(rangeRandom(0, 300), rangeRandom(0, 300), "bomb");
+
 
 export function createItem(x, y, type) {
     items.push(new Item(x, y, type));
@@ -65,7 +71,6 @@ export function update(canvas) {
             item.dx = directions[Math.floor(Math.random() * 2)] * item.speed;
             item.dy = directions[Math.floor(Math.random() * 2)] * item.speed;
             
-            
     }
         // 위아래 벽 충돌 감지
         if(item.y + item.height >= canvas.height || item.y < 0) {
@@ -75,7 +80,6 @@ export function update(canvas) {
             const directions = [-1, 1];
             item.dy = directions[Math.floor(Math.random() * 2)] * item.speed;
             item.dx = directions[Math.floor(Math.random() * 2)] * item.speed;
-            
     }
 }
 }
@@ -86,10 +90,10 @@ export function draw(ctx) {
         let item = items[i];
 
         if (item.type == "power"){
-            ctx.drawImage(img_poweritem, item.x, item.y, 30, 35);
+            ctx.drawImage(img_poweritem, item.x, item.y, 25, 35 );
         }
         else {
-            ctx.drawImage(img_bombitem, item.x, item.y, 40, 35);
+            ctx.drawImage(img_bombitem, item.x, item.y, 37, 37);
         }
         
     }
