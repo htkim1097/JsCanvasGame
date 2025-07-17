@@ -7,17 +7,25 @@ const blueBulletSize = 15;
 
 let playerPos = [];
 let frameCnt = 0;
+let bossCommingImg = new Image();
+bossCommingImg.src = "../images/PNG/Image 265.png";
 export let isGameOver = false;
-
 export const enemies = new Array();  // 적 비행기 객체 배열
 export const bullets = new Array();  // 탄 객체 배열
 const effects = new Array();  // 효과 객체 배열
 
 // 이동 패턴
-export const RedSmallPattern = {
+const RedSmallPattern = {
     FORWARD: 0,
     RETURN: 1,
     VERTICAL: 2,
+};
+
+// 이동 패턴
+const BlueSmallPattern = {
+    FORWARD: 0,
+    LEFT: 1,
+    RIGHT: 2
 };
 
 const BulletType = {
@@ -25,8 +33,7 @@ const BulletType = {
     RED: 1,
 }
 
-// 소형 적 비행기1
-// 상단에서 출현 -> 직진 공격, 히트앤런, 종열 대형 공격
+// 소형 빨간 비행기
 function RedSmallPlane(x, pattern, isHoming) {
     this.x = x;
     this.y = -100;
@@ -35,6 +42,8 @@ function RedSmallPlane(x, pattern, isHoming) {
     this.life = 1;
     this.speed = 4;
     this.updateCnt = 0;
+    this.isHit = false;
+    this.hitTime = 0;
     this.movePattern = pattern;
     this.img = new Image(this.width, this.height);
     this.img.src = "../images/PNG/Image79.png";
@@ -60,15 +69,7 @@ function RedSmallPlane(x, pattern, isHoming) {
     }
 }
 
-// 이동 패턴
-export const BlueSmallPattern = {
-    FORWARD: 0,
-    LEFT: 1,
-    RIGHT: 2
-};
-
-// 소형 적 비행기2
-// 상단에서 출현 -> 좌우 선회 공격, 직진 공격
+// 소형 파란 비행기
 function BlueSmallPlane(x, pattern, isHoming) {
     this.x = x;
     this.y = -100;
@@ -77,6 +78,8 @@ function BlueSmallPlane(x, pattern, isHoming) {
     this.life = 1;
     this.speed = 5;
     this.updateCnt = 0;
+    this.isHit = false;
+    this.hitTime = 0;
     this.movePattern = pattern;
     this.img = new Image(this.width, this.height);
     this.img.src = "../images/PNG/Image104.png";
@@ -103,7 +106,6 @@ function BlueSmallPlane(x, pattern, isHoming) {
 }
 
 // 중형 적 비행기
-// 상단 출현 -> 체류 공격 -> 좌우 이탈
 function MiddlePlane(x, y, destX, destY, isHoming) {
     this.x = x;
     this.y = y;
@@ -114,6 +116,8 @@ function MiddlePlane(x, y, destX, destY, isHoming) {
     this.life = 6;
     this.speed = 3;
     this.updateCnt = 0;
+    this.isHit = false;
+    this.hitTime = 0;
     this.img = new Image();
     this.img.src = "../images/PNG/Image110.png";
     this.isDestroyed = false;
@@ -138,7 +142,6 @@ function MiddlePlane(x, y, destX, destY, isHoming) {
 }
 
 // 대형 적 비행기
-// 상단에서 출현 -> 체류 공격 -> 저속으로 하단 이탈
 function LargePlane(x, y, destX, destY) {
     this.x = x;
     this.y = y;
@@ -149,6 +152,8 @@ function LargePlane(x, y, destX, destY) {
     this.life = 26;
     this.speed = 2;
     this.updateCnt = 0;
+    this.isHit = false;
+    this.hitTime = 0;
     this.img = new Image(this.width, this.height);
     this.img.src = "../images/PNG/Image96.png";
     this.isDestroyed = false;
@@ -201,6 +206,8 @@ function BossPlane(x, y) {
     this.life = 150;
     this.speed = 1;
     this.updateCnt = 0;
+    this.isHit = false;
+    this.hitTime = 0;
     this.img = new Image(this.width, this.height);
     this.img.src = "../images/PNG/Image94.png";
     this.isDestroyed = false;
@@ -310,9 +317,11 @@ function RealBossPlane(x, y) {
     this.destYs = [100, 180, 30, 100, 20, 250, 200, 40, 60];
     this.width = 200;
     this.height = 120;
-    this.life = 300;
+    this.life = 220;
     this.speed = 4;
     this.updateCnt = 0;
+    this.isHit = false;
+    this.hitTime = 0;
     this.isDestroyed = false;
     this.nextMove = 0;
     this.lw = [];
@@ -334,7 +343,7 @@ function RealBossPlane(x, y) {
     this.fire = async () => {
         // 출현할 때는 공격 안함.
         await sleep(2500);
-        let c=0;
+        let c = 0;
         while (!this.isDestroyed) {
             c++;
             if (this.isDestroyed) break;
@@ -519,7 +528,7 @@ function BlueBullet(x, y, destX, destY) {
     this.destY = destY;
     this.width = blueBulletSize;
     this.height = blueBulletSize;
-    this.speed = 7;
+    this.speed = 6;
     this.img = new Image(this.width, this.height);
     this.img.src = "../images/enemy_bullet2.png";
     this.updateCnt = 0;
@@ -579,23 +588,29 @@ function RealBossFirstAnim(x, y, w, h) {
 }
 
 export async function draw(ctx) {
+    if (4100 <= frameCnt && frameCnt < 4250){
+        ctx.drawImage(bossCommingImg, 60, 200, 380, 62)
+    }
+
     // 적 그리기
     for (let i = 0; i < enemies.length; i++) {
         let enemy = enemies[i];
 
+        if (enemy.isHit && frameCnt - enemy.hitTime < 5) {
+            ctx.filter = 'brightness(150%) sepia(100%) hue-rotate(-50deg) saturate(500%)';
+        } else {
+            ctx.filter = 'none';
+        }
+
         if (enemy.img.src != undefined) {
             ctx.drawImage(enemy.img, enemy.x, enemy.y, enemy.width, enemy.height);
         }
-        // else if (enemy instanceof RealBossPlane){
-        //     for (let i = 0; i < enemy.mainImgs.length; i++){
-        //         ctx.drawImage(enemy.mainImgs[i], 100, 100, 100, 100);
-        //     }
-        // }
-        // 이미지 파일이 없으면 적을 박스로 그리기
         else {
             ctx.fillStyle = 'red';
             ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
         }
+
+        ctx.filter = 'none'; // 필터 초기화
     }
 
     // 탄 그리기
@@ -877,10 +892,13 @@ function addBoss() {
 export function damaged(enemy, damage) {
     enemy.life -= damage;
 
+    enemy.isHit = true;
+    enemy.hitTime = frameCnt;
+
     // x, y, power, bomb
     let itemArr = [];
     if (enemy instanceof MiddlePlane) {
-        itemArr = [enemy.x, enemy.y, rangeRandom(-4, 2), 0]
+        itemArr = [enemy.x, enemy.y, rangeRandom(0, 2), 0]
     }
     else if (enemy instanceof LargePlane) {
         itemArr = [enemy.x, enemy.y, 1, rangeRandom(-5, 2)]
@@ -903,7 +921,7 @@ function checkDelCondition(enemy, canvas) {
     if (enemy.y < -180 || enemy.y > canvas.height + 180 || enemy.x < -180 || enemy.x > canvas.width + 180) {
         enemy.isDestroyed = true;
         enemies.splice(enemies.indexOf(enemy), 1);
-        enemy=null;
+        enemy = null;
     }
 }
 
@@ -911,6 +929,7 @@ function checkLife(enemy) {
     if (enemy.life <= 0) {
         // 현재 위치에 폭발 이펙트 생성
         effects.push(new ExplosionAnim(enemy.x, enemy.y, enemy.width, enemy.height));
+
         enemy.isDestroyed = true;
         enemies.splice(enemies.indexOf(enemy), 1);
         return true;
@@ -1028,27 +1047,27 @@ function createEnemy() {
             addRedSmallPlane(5, 200);
             break;
         case 3900:
-            addRedSmallPlane(7, 300);
+            addRedSmallPlane(5, 300);
             break;
-        case 4000:
+        case 4300:
             addBoss();
             break;
-        case 4100:
+        case 4500:
             addRedSmallPlane(5, 200);
             break;
-        case 4800:
+        case 5000:
             addBlueSmallPlane(4, 200);
             break;
         case 5500:
             addRedSmallPlane(4, 300, true, canvasWidth / 5 * 1, RedSmallPattern.VERTICAL);
             break;
-        case 5800:
+        case 6500:
             addRedSmallPlane(4, 300, true, canvasWidth / 5 * 3, RedSmallPattern.VERTICAL);
             break;
-        case 6500:
+        case 7000:
             addRedSmallPlane(4, 200);
             break;
-        case 7700:
+        case 8000:
             addBlueSmallPlane(7, 200);
             break;
     }
