@@ -16,7 +16,13 @@ let img_right = new Image();
 let img_life = new Image();
 let img_bomb2 = new Image();
 let startImg = new Image();
+let keyGuideImg = new Image();
+let gameOverImg = new Image();
+let gameWinImg = new Image();
 
+gameWinImg.src = "../images/game_clear.png";
+gameOverImg.src = "../images/ending_Image.png";
+keyGuideImg.src = "../images/key.png";
 img_player.src = "../images/png/Image45.png";
 img_bullet.src = "../images/bullet.png";
 img_bomb.src = "../images/bomb.png";
@@ -388,7 +394,7 @@ function handleCollision() {
         if (collision) {
             addItem(oneItem);
 
-            if (oneItem.type == "bomb"){
+            if (oneItem.type == "bomb") {
                 item.createGetItemEffect(oneItem.x, oneItem.y, "bomb");
             }
             else {
@@ -549,9 +555,6 @@ function gameloop() {
 
     if (nowState == GameState.start) {
         ctx.drawImage(startImg, 0, 0, canvas.width, canvas.height);
-
-        let keyGuideImg = new Image();
-        keyGuideImg.src = "../images/key.png";
         ctx.drawImage(keyGuideImg, 140, 360, 192, 100);
 
         if (keys.includes(true)) {
@@ -560,6 +563,7 @@ function gameloop() {
     }
     else if (nowState == GameState.play) {
         if (isGameOver) {
+            console.log("3")
             nowState = GameState.end;
         }
 
@@ -567,20 +571,12 @@ function gameloop() {
         draw();
     }
     else if (nowState == GameState.end) {
-        let gameOverImg = new Image();
-
         if (win) {
-            gameOverImg.src = "../images/game_clear.png";
+            ctx.drawImage(gameWinImg, 0, 0, canvas.width, canvas.height);
         }
         else {
-            gameOverImg.src = "../images/ending Image.png";
-            
+            ctx.drawImage(gameOverImg, 0, 0, canvas.width, canvas.height);
         }
-        ctx.drawImage(gameOverImg, 0, 0, canvas.width, canvas.height);
-
-        // if (keys.includes(true)) {
-        //     nowState = GameState.start;
-        // }
     }
 
     requestAnimationFrame(gameloop);

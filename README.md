@@ -12,8 +12,8 @@ images : 이미지 소스들
 - 참고 자료 :  
 - https://www.youtube.com/watch?v=BgK7qM8-3dQ&t=1399s&ab_channel=%EC%BD%94%EB%94%A9%EC%95%8C%EB%A0%A4%EC%A3%BC%EB%8A%94%EB%88%84%EB%82%98  
 - https://stickode.tistory.com/1298  
--test
 
 
+## 코드 참고
 
-
+https://docs.google.com/presentation/d/1jwHnM6Afiij_gAK4jLolox94CVZm29YJUv4T8AcZ1-k/edit?usp=sharing

@@ -343,36 +343,35 @@ function RealBossPlane(x, y) {
     this.fire = async () => {
         // 출현할 때는 공격 안함.
         await sleep(2500);
-        let c = 0;
+        
         while (!this.isDestroyed) {
-            c++;
-            if (this.isDestroyed) break;
+            // if (this.isDestroyed) break;
             await this.attack3();
-            if (this.isDestroyed) break;
+            // if (this.isDestroyed) break;
             await sleep(rangeRandom(200, 250));
             await this.attack4();
-            if (this.isDestroyed) break;
+            // if (this.isDestroyed) break;
             await sleep(rangeRandom(200, 250));
 
             await this.randomAttack(rangeRandom(1, 6));
-            if (this.isDestroyed) break;
+            // if (this.isDestroyed) break;
             await sleep(rangeRandom(200, 250));
 
             await this.attack1();
-            if (this.isDestroyed) break;
+            // if (this.isDestroyed) break;
             await sleep(rangeRandom(200, 250));
             await this.attack2();
-            if (this.isDestroyed) break;
+            // if (this.isDestroyed) break;
             await sleep(rangeRandom(200, 250));
 
             await this.randomAttack(rangeRandom(1, 6));
-            if (this.isDestroyed) break;
+            // if (this.isDestroyed) break;
             await sleep(rangeRandom(200, 250));
-            console.log(c);
         }
     }
 
     this.randomAttack = async (num) => {
+        await this.checkDestroy();
         switch (num) {
             case 1:
                 await this.attack1();
@@ -647,11 +646,6 @@ export function update(canvas, pPos) {
     frameCnt++;
     playerPos[0] = pPos[0];
     playerPos[1] = pPos[1];
-
-    if (frameCnt % 100 == 0) {
-        // console.log(bullets);
-        console.log(enemies);
-    }
 
     for (let i = 0; i < enemies.length; i++) {
         let enemy = enemies[i];

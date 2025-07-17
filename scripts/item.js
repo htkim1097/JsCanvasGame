@@ -62,6 +62,7 @@ export function update(canvas) {
 
         //양 옆 벽 충돌 감지
         if (item.x + item.width >= canvas.width || item.x < 0) {
+            // x값 위치 조정
             item.x = Math.max(0, Math.min(canvas.width - item.width, item.x)); //화면 밖으로 나가지 않게 위치 보정
             item.dx *= -item.dx; //x 축 방향 반전(좌, 우)
 
