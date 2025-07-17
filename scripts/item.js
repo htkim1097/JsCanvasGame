@@ -7,6 +7,18 @@ let img_bombitem = new Image();
 img_poweritem.src = "../images/png/Image144.png";
 img_bombitem.src = "../images/png/Image259.png";
 
+
+//폭탄 아이템 텍스트 이펙트 이미지 
+const img_bombtext1 = new Image();
+const img_bombtext2 = new Image();
+
+img_bombtext1.src = "../images/png/Image260.png";
+img_bombtext2.src = "../images/png/Image264.png";
+
+//텍스트 효과 배열
+const effects = []; 
+
+
 function Item(x, y, type) {
     this.x = x;
     this.y = y;
@@ -28,6 +40,10 @@ function Item(x, y, type) {
 
 export function createItem(x, y, type) {
     items.push(new Item(x, y, type));
+    
+    if (type === "bomb") {
+        effects.push(new BombEffect(x, y));
+    }
 }
 
 // 아이템 위치 업데이트 함수
@@ -59,6 +75,16 @@ export function update(canvas) {
 
         }
     }
+    //텍스트 이펙트 업데이트 
+    for (let i = effects.length - 1; i >= 0; i--) {
+        const effect = effects[i];
+        effect.update();
+        
+        // 최대 프레임 넘으면 제거(텍스트 효과 사라지기)
+        if (effect.updateCnt >= effect.maxFrame) {
+            effects.splice(i, 1);
+        }
+    }
 }
 
 // 아이템 캔버스 그리기 함수
@@ -73,4 +99,38 @@ export function draw(ctx) {
             ctx.drawImage(img_bombitem, item.x, item.y, item.width, item.height);
         }
     }
+    for (let i = 0; i < effects.length; i++) {
+        effects[i].draw(ctx);
+    }
+}
+// bomb 아이템 텍스트 이펙트 객체 생성 함수
+function BombEffect(x, y, type) {
+    this.x = x;
+    this.y = y;
+    
+    this.width = 100;
+    this.height = 100;
+    
+    this.updateCnt = 0;
+    this.interval = 3;
+    this.currentFrame = 0;
+    this.maxFrame = 20; //이펙트 총 지속 프레임 수
+    this.slideSpeed = 1; // 슬라이드 이동 속도
+    this.animFrames = [img_bombtext1, img_bombtext2];
+
+    this.update = function () {
+        this.y -= this.slideSpeed;
+        this.updateCnt++;
+        
+        //이미지 교체 - interval마다 프레임 변경
+        if (this.updateCnt % this.interval === 0) {
+            this.currentFrame++;
+        }
+    };
+    
+    //이벤트 그리기 함수
+    this.draw = function (ctx) {
+        const frame = this.animFrames[this.currentFrame % this.animFrames.length];
+        ctx.drawImage(frame, this.x, this.y, this.width, this.height);
+    };
 }
