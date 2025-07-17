@@ -387,6 +387,14 @@ function handleCollision() {
             (player.y < oneItem.y + oneItem.height) && (player.y + player.imgHeight > oneItem.y);
         if (collision) {
             addItem(oneItem);
+
+            if (oneItem.type == "bomb"){
+                item.createGetItemEffect(oneItem.x, oneItem.y, "bomb");
+            }
+            else {
+                item.createGetItemEffect(oneItem.x, oneItem.y, "power");
+            }
+
             item.items.splice(i, 1);
         }
     }

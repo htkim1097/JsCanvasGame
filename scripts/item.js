@@ -7,13 +7,18 @@ let img_bombitem = new Image();
 img_poweritem.src = "../images/png/Image144.png";
 img_bombitem.src = "../images/png/Image259.png";
 
-
 //폭탄 아이템 텍스트 이펙트 이미지 
 const img_bombtext1 = new Image();
 const img_bombtext2 = new Image();
 
 img_bombtext1.src = "../images/png/Image260.png";
 img_bombtext2.src = "../images/png/Image264.png";
+
+const img_powertext1 = new Image();
+const img_powertext2 = new Image();
+
+img_powertext1.src = "../images/png/Image261.png";
+img_powertext2.src = "../images/png/Image263.png";
 
 //텍스트 효과 배열
 const effects = []; 
@@ -40,10 +45,10 @@ function Item(x, y, type) {
 
 export function createItem(x, y, type) {
     items.push(new Item(x, y, type));
-    
-    if (type === "bomb") {
-        effects.push(new BombEffect(x, y));
-    }
+}
+
+export function createGetItemEffect(x, y, type) {
+    effects.push(new ItemGetEffect(x, y, type));
 }
 
 // 아이템 위치 업데이트 함수
@@ -104,19 +109,19 @@ export function draw(ctx) {
     }
 }
 // bomb 아이템 텍스트 이펙트 객체 생성 함수
-function BombEffect(x, y, type) {
+export function ItemGetEffect(x, y, type) {
     this.x = x;
     this.y = y;
     
-    this.width = 100;
-    this.height = 100;
+    this.width = 110;
+    this.height = 50;
     
     this.updateCnt = 0;
     this.interval = 3;
     this.currentFrame = 0;
     this.maxFrame = 20; //이펙트 총 지속 프레임 수
     this.slideSpeed = 1; // 슬라이드 이동 속도
-    this.animFrames = [img_bombtext1, img_bombtext2];
+    this.animFrames = [type == "bomb" ? img_bombtext1 : img_powertext1, type == "bomb" ? img_bombtext2 : img_powertext2];
 
     this.update = function () {
         this.y -= this.slideSpeed;
