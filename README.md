@@ -1,6 +1,4 @@
 # JavaScript Canvas 게임  
-참여자 : 윤광훈, 오세라, 김현태  
-
 ## 폴더 구조  
 main : 최상단 html 위치  
 scripts : html에 사용되는 java script 모음  
