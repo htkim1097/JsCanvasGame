@@ -12,6 +12,6 @@ images : 이미지 소스들
 - https://stickode.tistory.com/1298  
 
 
-## 코드 참고
+## 코드 리뷰
 
 https://docs.google.com/presentation/d/1jwHnM6Afiij_gAK4jLolox94CVZm29YJUv4T8AcZ1-k/edit?usp=sharing
